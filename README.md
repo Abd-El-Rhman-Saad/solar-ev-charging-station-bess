@@ -90,7 +90,14 @@ Standard MPPT algorithms can lock onto a **local** maximum under **Partial Shadi
 ## 👥 Team & Supervision
 
 Developed by a team of nine students:
-Nour El-Deen Mohamed Fathy, Abd El-Rhman Muhammad Saad, Hassan Ibrahim Hassan Al Halwani, Mai Nagah Ali, Mariam Mamdouh Ibrahim, Rewan Amr Mahmoud, Rwan Mohamed Abd-Elmokhtar, Yasmeen Salah Khobeez, and Youssef Ebrahim Abd El-Sattar.
+* Abd El-Rhman Muhammad Saad
+* Nour El-Deen Mohamed Fathy
+* Yasmeen Salah Khobeez
+* Mariam Mamdouh Ibrahim
+* Mai Nagah Ali
+* Rwan Mohamed Abd-Elmokhtar
+* Rewan Amr Mahmoud
+* Youssef Ebrahim Abd El-Sattar
 
 **Supervisor:** Prof. Dr. Ahmed Abbas El Serougi.
 
