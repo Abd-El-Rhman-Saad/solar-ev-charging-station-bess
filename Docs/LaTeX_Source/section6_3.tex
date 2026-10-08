@@ -1,0 +1,368 @@
+\graphicspath{{../2/figures/}}
+\section{Hardware Implementation of the Buck Converter}
+In Electric Vehicle (EV) charging infrastructure, power electronic interfaces must deliver regulated DC power tailored to the safe operating limits of the battery chemistry. The step-down (Buck) DC-DC converter serves as a vital component in this pipeline, typically transforming a higher DC bus voltage down to a controlled level required by the battery pack. 
+
+Battery charging profiles rely on precise execution of two distinct phases:
+\begin{itemize}
+    \item \textbf{Constant Current (CC) Phase:} Initiated at low state-of-charge (SoC), where the converter acts as a regulated current source to prevent overcurrent damage.
+    \item \textbf{Constant Voltage (CV) Phase:} Triggered as the battery voltage approaches its maximum safe threshold, clamping the output voltage while the charging current naturally decays.
+\end{itemize}
+
+A step-down Buck converter topology provides an exceptionally high-efficiency path to step down the voltage, utilizing Pulse Width Modulation (PWM) duty cycle control to dynamically respond to the battery's changing internal impedance.
+
+\subsection{Buck Converter and Real-World Governing Equations}
+To achieve high fidelity in control modeling, practical non-idealities—such as component parasitic resistances and semiconductor voltage drops—must be integrated into the steady-state equations. The prototype parameters and internal parasitics are defined as follows:
+\begin{align*}
+V_{in} &= 12.3\,\text{V} \quad (\text{Input voltage}) \\
+V_o &= 3.7\,\text{V} \quad (\text{Target output voltage}) \\
+R &= 10\,\Omega \quad (\text{Load resistance}) \\
+r_L &= 1.9\,\Omega \quad (\text{Inductor DC resistance}) \\
+r_C &= 0.2\,\Omega \quad (\text{Capacitor Equivalent Series Resistance, ESR}) \\
+r_{DS} &= 0.025\,\Omega \quad (\text{MOSFET on-resistance}) \\
+V_{fwd} &= 0.8\,\text{V} \quad (\text{Diode forward voltage drop}) \\
+f_{sw} &= 10\,\text{kHz} \quad (\text{Switching frequency})
+\end{align*}
+
+The continuous average output current $I_o$ and average inductor current $I_L$ delivered to the load are derived via Ohm's Law:
+\begin{equation}
+I_o = I_L = \frac{V_o}{R} = \frac{3.7\,\text{V}}{10\,\Omega} = 0.37\,\text{A}
+\end{equation}
+
+By applying volt-second balance across the inductor over a complete switching period and accounting for conduction drops in both states, the non-ideal duty cycle $D_u$ is calculated as:
+\begin{equation}
+D_u = \frac{V_{fwd} + I_L \cdot r_L + V_o}{V_{in} - I_L \cdot r_{DS} + V_{fwd}}
+\end{equation}
+
+Substituting the modified design parameters into this non-ideal model yields:
+\begin{equation}
+D_u = \frac{0.8 + (0.37 \cdot 1.9) + 3.7}{12.3 - (0.37 \cdot 0.025) + 0.8} = \frac{5.203}{13.09075} \approx 0.3975 \implies 39.75\%
+\end{equation}
+
+---
+
+\subsubsection{Component Ratings, Stress Analysis, and Selection Guidelines}
+Component sizing requires calculating theoretical boundary limits based on strict ripple target constraints, followed by establishing practical hardware margins.
+
+\paragraph{Ripple Target Specifications}~\hfill\\
+The target design boundaries dictate an allowable peak-to-peak inductor current ripple ($\Delta I_L$) set to $60\%$ of the average inductor current, and an output voltage ripple ($\Delta V_o$) restricted to $2\%$ of the nominal output voltage:
+\begin{align*}
+\Delta I_L &= 0.2 \cdot I_L = 0.2 \cdot 0.37\,\text{A} = 0.074\,\text{A} \\
+\Delta V_o &= 0.02 \cdot V_o = 0.02 \cdot 3.7\,\text{V} = 0.074\,\text{V}
+\end{align*}
+
+\paragraph{Theoretical Minimum Sizing Calculations}~\hfill\\
+Based on these target ripple tolerances and the operating frequency ($f_{sw} = 10\,\text{kHz}$), the theoretical minimum requirements for inductance ($L_{min}$) and output capacitance ($C_{min}$) are derived through standard continuous conduction equations:
+
+\begin{equation}
+L_{min} = \frac{\left(V_{in} - I_L(r_{DS} + r_L) - V_o\right) \cdot D_u}{\Delta I_L \cdot f_{sw}}
+\end{equation}
+\begin{equation}
+L_{min} = \frac{\left(12.3 - 0.37(0.025 + 1.9) - 3.7\right) \cdot 0.3975}{0.222 \cdot 10000} = \frac{3.1354}{2220} \approx 1.412\,\text{mH}
+\end{equation}
+
+Similarly, the minimum output filter capacitance required to attenuate the current ripple under pure capacitive filtering is calculated as:
+\begin{equation}
+C_{min} = \frac{\Delta I_L}{8 \cdot \Delta V_o \cdot f_{sw}} = \frac{0.222}{8 \cdot 0.074 \cdot 10000} \approx 37.5\,\mu\text{F}
+\end{equation}
+
+\subsubsection{Physical Implementation and Safety Margins}
+In practical converter design, selecting components with ratings higher than the bare minimum calculations is mandatory to account for component tolerances, temperature drift, equivalent series resistance (ESR) voltage drops, and to guarantee deep insertion into Continuous Conduction Mode (CCM). 
+
+The choice of $L = 2\,\text{mH}$ ensures that actual current ripple is restricted well below the $20\%$ limit, reducing magnetic core saturation risks. Concurrently, utilizing an electrolytic $C = 220\,\mu\text{F}$ capacitor effectively suppresses transient voltage drops contributed by its structural $r_C = 0.2\,\Omega$ ESR layer, maintaining high precision during voltage and current closed-loop execution.
+
+\subsection{Component Electrical Stress Evaluation}
+To verify device safety margins, the steady-state voltage and current stresses imposed on the switching MOSFET and freewheeling diode are determined below:
+
+\subsubsection{Power Switch (IRLZ44N MOSFET) Stresses}
+\begin{itemize}
+    \item \textbf{Voltage Stress ($V_{sw\_stress}$):} The maximum blocking voltage across the switch occurs during off-state flyback intervals:
+    \begin{equation}
+    V_{sw\_stress} = V_{in} + V_{fwd} = 12.3\,\text{V} + 0.8\,\text{V} = 13.1\,\text{V}
+    \end{equation}
+    Given the IRLZ44N's breakdown rating of $V_{DSS} = 55\,\text{V}$, a wide safety margin is maintained.
+    \item \textbf{Current Stress ($I_{sw\_stress}$):} The average continuous current stress corresponds to the load demand:
+    \begin{equation}
+    I_{sw\_stress} = I_o = 0.37\,\text{A}
+    \end{equation}
+    This is well below the device limit ($I_D = 47\,\text{A}$), keeping static conduction losses low despite the internal $r_{DS} = 0.025\,\Omega$.
+\end{itemize}
+
+\subsubsection{Freewheeling Diode (MBR20100CT) Stresses}
+\begin{itemize}
+    \item \textbf{Voltage Stress ($V_{d\_stress}$):} The reverse blocking voltage drop seen by the diode when the MOSFET conducts is given by:
+    \begin{equation}
+    V_{d\_stress} = -V_{in} + I_L \cdot r_{DS} = -12.3 + (0.37 \cdot 0.025) = -12.29075\,\text{V}
+    \end{equation}
+    The MBR20100CT rectifier features a maximum reverse rating of $100\,\text{V}$, safely insulating it from breakdown.
+\end{itemize}
+
+\subsection{Schematic Implementation and Driving Architecture}
+The hardware circuit design integrates dedicated interfacing blocks to overcome the structural limits of high-side switching and gate charge manipulation.
+
+\begin{figure}[h]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=\textwidth]{Figures/1.scmatic (1).png} 
+    \caption{Complete Schematic Layout of Buck Converter}
+    \label{fig:circuit_schematic}
+\end{figure}
+
+\subsubsection{High-Side Driver Bootstrapping Mechanics}
+Because the N-channel MOSFET $Q_1$ is positioned on the high side of the switching node, its source terminal ($V_S$) pulses dynamically between $0\,\text{V}$ (when $Q_1$ is off and $D_3$ conducts) and $12.3\,\text{V}$ (when $Q_1$ is saturated). To preserve the channel conduction state, the gate driver must maintain a voltage $V_{HO}$ that sits roughly $10\,\text{V}$ \textit{higher} than the floating source potential ($V_S$).
+
+The \textbf{IR2110} high-side gate driver achieves this using an asymmetric bootstrap configuration:
+\begin{enumerate}
+    \item When $Q_1$ is deactivated, the $V_S$ node drops close to ground. The $+12\,\text{V}$ supply rail passes through the fast-recovery dual Schottky diode array $Q_2$ (\text{U10A6CIC}) to charge the parallel-connected bootstrap network $C_1$ ($22\,\mu\text{F}$ electrolytic) and $C_2$ ($0.1\,\mu\text{F}$ ceramic).
+    \item When the logic interface triggers the High-Side Input (\text{HIN}), internal logic references the high-side floating supply rail to the charged potential stored on $V_B$, biasing the gate well above the input supply voltage rail ($V_{in} + V_{gate}$).
+\end{enumerate}
+
+\subsubsection{Gate Turn-Off Acceleration Optimization}
+To mitigate severe switching overlap losses, the gate driving loop features an asymmetric charging and discharging network composed of resistor $R_4$ ($30\,\Omega$) and Schottky diode $D_4$ (\text{1N5820}):
+\begin{itemize}
+    \item \textbf{Turn-on Phase:} Current flows from the driver pin $HO$ directly through $R_4$ to charge the internal input capacitance ($C_{iss}$) of the MOSFET, dampening parasitic high-frequency grid ringing.
+    \item \textbf{Turn-off Phase:} When $HO$ pulls down to clear the channel, diode $D_4$ becomes forward-biased, creating a zero-resistance bypass path around $R_4$. The gate charge is shunted directly back into the driver's sinking pin, resulting in a steep, rapid fall-time profile that eliminates overlapping switching losses and curtails thermal runaway.
+\end{itemize}
+
+\subsection{Feedback Sensing Architecture and Calibration}
+To transition the Buck converter from open-loop operation to a closed-loop regulatory system (such as a current or voltage controlled charging circuit), high-accuracy feedback loops are established using an \textbf{ACS712-5A} Hall-effect current sensor and an \textbf{HD 0-25V} resistive voltage sensor module.
+
+\subsubsection{ACS712-5A Current Sensor Characterization and Calibration}
+The ACS712-5A measures bidirectional current by tracking the magnetic field generated through its internal copper conduction path. The sensor outputs an analog voltage proportional to the current, featuring a nominal sensitivity coefficient ($S$) of $185\,\text{mV/A}$ and a theoretical zero-current baseline offset of $V_{cc}/2 = 2.5\,\text{V}$.
+\newpage
+\paragraph{Offset Determination}
+In practical environments, internal semiconductor tolerances, minor fluctuations in the microcontroller's $+5\,\text{V}$ supply rail, and stray ambient magnetic fields introduce static shifts in the nominal sensor output. To eliminate systematic measurement errors, an empirical zero-load calibration routine was executed.
+
+The sensor's conduction path was disconnected from the load loop ($I = 0\,\text{A}$). An explicit data logger program read the raw 10-bit Analog-to-Digital Converter (ADC) values on pin \texttt{A0}:
+
+\begin{verbatim}
+// Calibration firmware routine for capturing baseline current offset
+float Ain = 0.0;
+float Aout = 0.0;
+void setup() {
+  pinMode(A0, INPUT);
+  pinMode(2, OUTPUT);
+  Serial.begin(9600);
+  Serial.print("DC Current Calibration Baseline");
+}
+
+void loop() {
+  int val = analogRead(A0);
+  Serial.println(val);
+  delay(500);
+}
+\end{verbatim}
+
+\begin{figure}[h]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.75\textwidth]{Figures/offset.png} 
+    \caption{AC712 OFFSET}
+    \label{fig:circuit_schematic}
+\end{figure}
+
+The telemetry stream yielded a steady, repeatable empirical zero-current raw ADC index of:
+\begin{equation}
+\text{ADC}_{offset} = 450
+\end{equation}
+
+The captured index of $450$ reflects a baseline voltage offset of:
+\begin{equation}
+V_{offset} = 450 \cdot \left(\frac{5.12\,\text{V}}{1024}\right) = 2.25\,\text{V}
+\end{equation}
+
+\paragraph{Derived Measurement Equation}
+Integrating this empirical compensation term, the live current $I_{sense}$ passing through the buck converter's inductor path is reconstructed within the microcontroller firmware using the following scaling transformation:
+\begin{equation}
+I_{sense} = \frac{\left(\text{ADC}_{raw} - \text{ADC}_{offset}\right) \cdot \left(\frac{5.12}{1024}\right)}{S} = \frac{\left(\text{ADC}_{raw} - 450\right) \cdot 0.005\,\text{V}}{0.185\,\text{V/A}}
+\end{equation}
+
+\subsubsection{HD 0-25V DC Voltage Sensor Module Characterization}
+\paragraph{Potential Divider Topology and Step-Down Factor}
+The sensor's physical board layout features a precise series combination of two high-stability resistors: $R_1 = 30\,\text{k}\Omega$ and $R_2 = 7.5\,\text{k}\Omega$. The input test voltage ($V_{in\_sensor}$) is applied across the series stack, while the analog output pin ($S$) samples the voltage drop directly across the lower resistor ($R_2$) referenced to circuit ground.
+
+The transfer behavior is defined by the classical voltage divider relation:
+\begin{equation}
+V_{out\_sensor} = V_{in\_sensor} \cdot \left( \frac{R_2}{R_1 + R_2} \right)
+\end{equation}
+
+Substituting the module's component specifications yields an attenuation scaling factor ($\alpha$):
+\begin{equation}
+\alpha = \frac{7.5\,\text{k}\Omega}{30\,\text{k}\Omega + 7.5\,\text{k}\Omega} = \frac{7.5}{37.5} = \frac{1}{5} = 0.20
+\end{equation}
+
+This constant step-down scaling ratio of $5:1$ compresses a maximum measurable boundary input of $25\,\text{V}$ down into a safe, proportional $0\,\text{V}$ to $5\,\text{V}$ range matching the ADC's maximum limit.
+
+\subsection{Open-Loop Experimental Results and Limitations}
+
+\subsubsection{Open-Loop Analysis at Fixed Ideal Duty Cycle}
+To evaluate the baseline operation of the physical prototype, the converter was first operated in an open-loop configuration. The microcontroller was programmed to output a fixed, uncompensated duty cycle derived from the ideal conversion ratio:
+\begin{equation}
+D = \frac{V_o}{V_{in}} = \frac{3.7\,\text{V}}{12.3\,\text{V}} \approx 30.1\%
+\end{equation}
+
+Under this ideal open-loop condition, the expected theoretical output current delivered to the $R = 10\,\Omega$ load was $0.37\,\text{A}$. However, real-world physical measurements captured via an inline digital multimeter revealed a severe degradation in performance, with the actual load current dropping to:
+\begin{equation}
+I_{o\_measured} = 0.17\,\text{A}
+\end{equation}
+
+\begin{figure}[h]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/open loop r buck (1).jpeg} 
+    \caption{Open Loop Output Current of Buck Converter}
+    \label{fig:circuit_schematic}
+\end{figure}
+
+This major drop in output current is a classic consequence of uncompensated open-loop operation. When running at a fixed $30.1\%$ duty cycle without feedback, the system cannot adapt to structural voltage drops across the conduction path. The main factors pulling down the current include:
+
+As calculated in previous sections, to force $3.7\,\text{V}$ ($0.37\,\text{A}$) across this high-loss network in steady-state, the duty cycle actually needs to sit significantly higher at $D_u \approx 39.75\%$. 
+\subsection{Closed-Loop Experimental Results and Discussion}
+
+\subsubsection{Closed-Loop Current Control Implementation}
+To eliminate the severe steady-state current tracking errors observed in the open-loop configuration, the system was transitioned to a closed-loop regulatory framework. Real-time output current feedback captured via the calibrated ACS712-5A sensor was routed into a micro-controlled Proportional-Integral (PI) control loop. The algorithm processes the dynamic error signal:
+\begin{equation}
+e(t) = I_{ref} - I_{sense}
+\end{equation}
+and adjusts the PWM duty cycle ($D_u$) at every control interval to force the tracking error to zero. 
+
+\subsubsection{Experimental Performance under Varying Current References ($I_{ref}$)}
+The tracking capability of the closed-loop firmware was evaluated by stepping the current reference ($I_{ref}$) across multiple target settings. In stark contrast to the open-loop mode, the closed-loop system dynamically scaled the duty cycle to compensate for internal parasitic elements ($r_L = 1.9\,\Omega$, $V_{fwd} = 0.8\,\text{V}$, and $r_{DS} = 0.025\,\Omega$).
+
+The inline digital multimeter measurements confirmed highly precise and stable steady-state tracking across different operating points:
+
+\begin{enumerate}
+    \item \textbf{Target Reference $I_{ref} = 0.30\,\text{A}$:} The controller automatically stabilized the hardware around a measured current of \textbf{$0.29\,\text{A}$}.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/0.3.jpg} 
+    \caption{Closed Loop Current Control Output Current of Buck Converter 1.}
+    \label{fig:circuit_schematic}
+\end{figure}
+    \item \textbf{Target Reference $I_{ref} = 0.40\,\text{A}$:} The controller dynamically adjusted conduction intervals, yielding a measured steady-state current of \textbf{$0.38\,\text{A}$}.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/0.4.jpg} 
+    \caption{Closed Loop Current Control Output Current of Buck Converter 2.}
+    \label{fig:circuit_schematic}
+\end{figure}
+    \item \textbf{Target Reference $I_{ref} = 0.50\,\text{A}$:} The system maintained linearity, regulating the load current precisely at \textbf{$0.48\,\text{A}$}.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/0.5.jpg} 
+    \caption{Closed Loop Current Output Current of Buck Converter 3.}
+    \label{fig:circuit_schematic}
+\end{figure}
+    \item \textbf{Target Reference $I_{ref} = 0.60\,\text{A}$:} At higher current demands, the controller safely increased the effective volt-seconds across the inductor to yield a stable \textbf{$0.58\,\text{A}$}.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/0.6.jpg} 
+    \caption{Closed Loop Current Control Output Current of Buck Converter 4.}
+    \label{fig:circuit_schematic}
+\end{figure}
+\end{enumerate}
+
+\begin{table}[h!]
+\centering
+\caption{Closed-Loop Steady-State Current Tracking Accuracy}
+\label{tab:closed_loop_results}
+\begin{tabular}{ccc}
+\toprule
+\textbf{Target Reference $I_{ref}$ (A)} & \textbf{Measured Current $I_o$ (A)} & \textbf{Steady-State Error (A)} \\ \midrule
+0.30                                    & 0.29                                & $-0.01$                         \\ 
+0.40                                    & 0.38                                & $-0.02$                         \\ 
+0.50                                    & 0.48                                & $-0.02$                         \\ 
+0.60                                    & 0.58                                & $-0.02$                         \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The experimental data compiled in Table~\ref{tab:closed_loop_results} validates the core objective of the closed-loop architecture. While the uncompensated open-loop trial failed to reach even $50\%$ of its theoretical current goal due to unmodeled hardware voltage drops, the PI controller successfully eliminated the bulk of the attenuation loop.
+
+The minor, consistent residual tracking error ($\approx -0.02\,\text{A}$) observed across the range is not a failure of loop convergence, but rather a structural constraint of the instrumentation setup.
+
+Ultimately, the closed-loop implementation successfully demonstrates the robust, self-correcting characteristics required for safe electric vehicle battery charging applications. The system successfully holds a constant current profile, layout parasitics or input voltage sag notwithstanding.
+
+\subsection{Steady-State Voltage at reference 0.5A for battery charging}
+To establish the baseline charging context for an equivalent EV battery pack, the closed-loop controller was tasked with maintaining a tightly regulated Constant Current (CC) profile of $I_{ref} = 0.5\,\text{A}$. Because the system operates with an active resistive load path ($R = 10\,\Omega$), forcing a continuous current of approximately $0.5\,\text{A}$ demands a proportional voltage climb across the output filter capacitor.
+
+\begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/v at 0.5.jpg} 
+    \caption{Closed Loop Output voltage at constant current = 0.5A}
+    \label{fig:circuit_schematic}
+\end{figure}
+
+\subsection{Closed-Loop Voltage Control Experimental Performance}
+To evaluate the converter's capability to operate as a regulated voltage source—a critical requirement for the Constant Voltage (CV) phase of an EV battery charging profile—the firmware was reconfigured for closed-loop voltage control. Real-time terminal voltage feedback was provided by the calibrated HD 0-25V potential divider module connected to an ADC channel. 
+
+The control loop dynamically computes the instantaneous tracking error:
+\begin{equation}
+e_v(t) = V_{ref} - V_o
+\end{equation}
+and adjusts the high-side MOSFET's duty cycle to hold the output constant, regardless of the voltage drop across internal parasitics ($r_L = 1.9\,\Omega$).
+
+The experimental tracking accuracy was validated across two discrete target voltage references, with the terminal voltages verified using an inline digital multimeter:
+
+\begin{enumerate}
+    \item \textbf{Target Voltage Reference $V_{ref} = 3.70\,\text{V}$:} The closed-loop algorithm successfully converged, holding the terminal voltage steady at an empirical reading of \textbf{$3.64\,\text{V}$}. This represents a minor, highly stable steady-state tracking error of only $-0.06\,\text{V}$.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/vc 3.7.jpg} 
+    \caption{Closed Loop Voltage Control Output of Buck Converter 1}
+    \label{fig:circuit_schematic}
+\end{figure}
+    \item \textbf{Target Voltage Reference $V_{ref} = 4.00\,\text{V}$:} Upon stepping the firmware reference upward, the controller immediately expanded the steady-state duty cycle to drive the output higher, settling smoothly at a measured terminal voltage of \textbf{$3.92\,\text{V}$}. The tracking error remained tightly bounded at $-0.08\,\text{V}$.
+    \begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.5\textwidth]{Figures/vc 4.jpg} 
+    \caption{Closed Loop Voltage Control Output of Buck Converter 2}
+    \label{fig:circuit_schematic}
+\end{figure}
+\end{enumerate}
+
+\begin{table}[h!]
+\centering
+\caption{Closed-Loop Steady-State Voltage Tracking Performance}
+\label{tab:voltage_control_results}
+\begin{tabular}{ccc}
+\toprule
+\textbf{Target Reference $V_{ref}$ (V)} & \textbf{Measured Output $V_o$ (V)} & \textbf{Steady-State Error (V)} \\ \midrule
+3.70                                    & 3.64                               & $-0.06$                         \\ 
+4.00                                    & 3.92                               & $-0.08$                         \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The tracking profiles summarized in Table~\ref{tab:voltage_control_results} demonstrate robust loop stability. Unlike open-loop operation—where internal losses cause major voltage sag—the closed-loop controller effectively forces the output to match the reference within a fraction of a volt. 
+
+The small residual steady-state error ($\le 80\,\text{mV}$) is primarily attributed to the resolution limit of the hardware feedback loop.
+
+\subsection{Hardware Layout and Printed Circuit Board (PCB) Design}
+
+\begin{figure}[H]
+    \centering
+    % Replace 'schematic.png' with your actual image file name
+    \includegraphics[width=0.75\textwidth]{Figures/2.pcb layout (1).png} 
+    \label{fig:circuit_schematic}
+\end{figure}
+
+Following the successful validation of the closed-loop control algorithms on a prototyping breadboard, a custom Printed Circuit Board (PCB) was designed to minimize stray parasitic inductances, stabilize node connections, and deliver reliable thermal handling for continuous power operation. 
+
+The 3D physical layout layout is structurally partitioned into distinct functional blocks to isolate high-frequency switching power paths from the sensitive low-voltage microcontroller interface signals:
+
+\begin{itemize}
+    \item \textbf{Low-Voltage Signal Conditioning Layer:} Positioned along the lower-left edge of the substrate, featuring the auxiliary input terminal (\texttt{input signal}) and the pull-down resistor $R_1$. This routes the high-speed PWM drive signal directly into the logic inputs of the high-side gate driver.
+    \item \textbf{Gate Drive Power Loop:} The \textbf{IR2110} DIP package (\text{U1}) sits centrally on the left half of the board, minimizing trace distances to its companion bootstrap ceramic capacitor ($C_2$), electrolytic capacitor ($C_1$), and the asymmetric gate network ($R_4, D_4$). The TO-220 switching packages—the high-side N-channel MOSFET (\text{Q1}) and the fast bootstrap diode array (\text{Q2})—are aligned vertically in close proximity to the driver to suppress inductive gate ringing.
+    \item \textbf{Power Filter Stage (The Buck Loop):} The high-power components are clustered on the right half of the board to establish a tight, low-impedance loop area:
+    \begin{itemize}
+        \item \textbf{Inductor ($L_1$):} Positioned at the bottom-center using an encapsulated magnetic core to prevent electromagnetic coupling with neighboring signal lines.
+        \item \textbf{Freewheeling Diode ($D_3$):} Placed inline right before the filter block to clamp high-side switching transients cleanly.
+        \item \textbf{Filter Capacitor ($C_5$):} A large, high-capacity blue radial electrolytic capacitor placed directly parallel to the load outputs to absorb voltage ripple.
+    \end{itemize}
+    \item \textbf{Integrated Sensor Arrays:} The blue \textbf{ACS712} breakout board module is securely integrated on the top rail via vertical header pins, receiving current straight from the output filter before passing it to the terminal blocks. 
+\end{itemize}

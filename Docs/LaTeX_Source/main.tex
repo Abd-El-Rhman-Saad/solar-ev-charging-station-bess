@@ -1,0 +1,191 @@
+\UseRawInputEncoding
+\documentclass[12pt, a4paper, oneside]{report}
+
+% --- Core Academic Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}      
+\usepackage{amssymb}      
+\usepackage{graphicx}     
+\usepackage{subcaption} % For subfigure environment
+\usepackage{geometry}     
+\usepackage{booktabs}     
+\usepackage{titlesec}     
+\usepackage{fmtcount} % Converts numbers (1) into words (ONE)
+\usepackage{etoolbox} % Allows us to patch styles dynamically
+\usepackage{textcomp} % For \textohm (Ω symbol)
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{longtable}
+\usepackage{array}
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}
+}
+
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\thepage}
+    \renewcommand{\headrulewidth}{0pt}
+}
+
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Enforce Unified LaTeX Margins ---
+\geometry{top=1in, bottom=1in, left=1.25in, right=1in}
+
+
+% --- Define the Premium Full-Page Style for Actual Chapters ---
+\newcommand{\applyFullPageChapterStyle}{%
+  \titleformat{\chapter}[display]
+    {\normalfont\centering} 
+    {\vspace*{5cm}\Large\MakeUppercase{Chapter \NUMBERstring{chapter}}} 
+    {4ex} 
+    {\Huge\bfseries\centering\makebox[0pt]{\resizebox{2cm}{!}{\raisebox{1ex}{$\sim$}}} \\ \vspace{3ex}} 
+    [\clearpage]
+}
+
+% --- Define the Normal Style for Index Pages ---
+\newcommand{\applyNormalChapterStyle}{%
+  \titleformat{\chapter}[display]
+    {\normalfont\huge\bfseries}
+    {\chaptername\ \thechapter}
+    {20pt}
+    {\Huge}
+}
+\usepackage{float} % Gives you the strict [H] force parameter
+% --- Force Numbering and Contents Inclusion down to Level 3 (Subsubsections) ---
+\setcounter{secnumdepth}{3} % Controls heading numbering depth
+\setcounter{tocdepth}{3}    % Controls Table of Contents depth
+\usepackage{tabularx}        % Enables self-wrapping, proportional columns
+\usepackage[table]{xcolor}   % Enables the \rowcolors zebra striping command
+% Forces \paragraph to break to a new line instead of staying inline
+\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\usepackage{caption}
+
+\captionsetup[table]{
+    justification=raggedright,
+    singlelinecheck=false,
+    labelfont=bf,
+    textfont=normalfont
+}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{siunitx}
+
+% Custom MATLAB color palette
+\definecolor{mgreen}{rgb}{0,0.6,0}
+\definecolor{mgray}{rgb}{0.5,0.5,0.5}
+\definecolor{mstring}{rgb}{0.62,0.12,0.94}
+\definecolor{mbackground}{rgb}{0.98,0.98,0.98}
+
+\lstset{
+    language=Matlab,
+    backgroundcolor=\color{mbackground},   
+    commentstyle=\color{mgreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{mgray},
+    stringstyle=\color{mstring},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=10pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    frame=single,                     % Adds an elegant outer frame border
+    rulecolor=\color{gray!30}
+}
+% ==========================================
+% List of Figures Formatting
+% ==========================================
+
+% Show "Figure 1.1" instead of "1.1"
+\renewcommand{\cftfigpresnum}{Figure~}
+\renewcommand{\cftfigaftersnum}{\quad}
+\setlength{\cftfignumwidth}{2.5cm}
+\usepackage[hidelinks]{hyperref}
+\begin{document}
+
+% =========================================================================
+% FRONT MATTER: Normal Index Styles
+% =========================================================================
+\input{cover}
+\pagenumbering{roman} 
+\applyNormalChapterStyle % Forces Contents, Figures, and Tables to look normal
+
+\tableofcontents
+\clearpage
+
+\listoffigures
+\clearpage
+
+\listoftables
+\clearpage
+
+\fancyhead[L]{List of Abbreviations} 
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\thepage}         
+    \renewcommand{\headrulewidth}{0pt}
+}
+\chapter*{List of Abbreviations}
+\input{List of Abbreviations}
+\clearpage
+
+\fancyhead[L]{\nouppercase{\leftmark}} 
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\thepage}          
+    \renewcommand{\headrulewidth}{0pt} 
+}
+
+% =========================================================================
+% MAIN TEXT: Switch to Premium Full-Page Style for Chapters
+% =========================================================================
+\pagenumbering{arabic} 
+\applyFullPageChapterStyle % Switches style to full-page text with flourish right here
+\chapter{Introduction}
+\include{section1}
+
+\chapter{Power Electronics Topologies and MPPT Theory}
+\include{section2_1}
+\include{section2_2}
+
+\chapter{Tools and Equipment}
+\include{section3}
+
+\chapter{Control Methods}
+\include{section4}
+
+\chapter{Simulation Results}
+\include{section5_1}
+\include{section5_2}
+\include{section5_3}
+\include{section5_4}
+\include{section5_5}
+\include{section5_6}
+\include{section5_7}
+\include{section5_8}
+
+\chapter{Hardware Validation}
+\include{section6_1}
+\include{section6_2}
+\include{section6_3}
+
+\chapter{Future Improvements}
+\include{section7}
+\clearpage
+\applyNormalChapterStyle 
+
+\input{references}
+
+\end{document}
