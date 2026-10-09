@@ -62,8 +62,9 @@ Standard MPPT algorithms can lock onto a **local** maximum under **Partial Shadi
 * **Bidirectional CC-CV supervisory logic:** documented in the thesis (Sec. 5.6.2). It keeps the battery inside safe limits by switching to voltage clamping when the pack is nearly full or empty.
 
 ### 4. EV Buck Charger (`4_EV_Buck_Charger/`)
-* **Open-loop model (`Buck.slx`):** validates component sizing, switching and ripple of the power stage.
-* **Closed-loop CC-CV charging:** the PI current loop (CC stage) and PI voltage loop (CV stage) are designed and simulated in the thesis (Chapter 5, Sec. 5.2.3). The CC stage was validated on hardware (Chapter 6). The closed-loop `.slx` models are not included in this repository yet.
+* **Open-loop model (`Buck.slx`):** validates component sizing, switching and ripple of the power stage from the 600 V DC link.
+* **Closed-loop model (`Buck_Controlled.slx`):** prototype-scale buck converter (10 V input, 10 kHz) with a PI current loop regulating the charging current at 0.74 A (CC stage); the CV voltage loop (7.4 V) is built in the model but commented out.
+* **Full CC-CV charging logic:** the PI current loop (CC) and PI voltage loop (CV) and their supervisory design are documented in the thesis (Chapter 5, Sec. 5.2.3). The CC stage was validated on hardware (Chapter 6).
 
 ### 5. Hardware & PCB Design (`5_Hardware_and_PCB_Design/`)
 * Altium Designer projects for the three converter boards (Interleaved Boost, Two-Quadrant Chopper, Buck).
