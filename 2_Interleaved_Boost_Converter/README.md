@@ -129,7 +129,7 @@ The closed-loop multi-loop control maintains rock-solid regulation of the output
 
 | Regulated Output Waveforms | Zoomed Steady-State Output |
 | :---: | :---: |
-| ![interleaved Output Scope](images/interleaved_output_scope.png) | ![interleaved Output Scope Zoomed](images/interleaved_output_scope_zoomed.png) |
+| ![Interleaved Output Scope](images/interleaved_output_scope.png) | ![Interleaved Output Scope Zoomed](images/interleaved_output_scope_zoomed.png) |
 
 ---
 
@@ -138,4 +138,5 @@ The closed-loop multi-loop control maintains rock-solid regulation of the output
 1. Open MATLAB and navigate to `2_Interleaved_Boost_Converter/`.
 2. To inspect the progressive design evolution, run any model from Phase 1 through Phase 3.
 3. Open the scope blocks to evaluate current ripple cancellation and output voltage settling times.
+   
 
