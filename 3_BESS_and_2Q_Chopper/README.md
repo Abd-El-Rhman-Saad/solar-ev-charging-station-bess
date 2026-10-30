@@ -129,19 +129,67 @@ The models capture our complete progressive verification workflow:
 ## 🏗️ System Architecture & Code Implementation
 
 **Two-Quadrant Chopper Closed-Loop Model (`final2q_all_cases.slx`):**
-[images/2q_chopper_model.png]
+
+![2Q Chopper Model](images/2q_chopper_model.png)
 
 **Embedded Control State Machine & Limits:**
 The MATLAB Function block below illustrates the inner current tracking and strict saturation bounds ($-3.1\text{ A}$ charging, $+10\text{ A}$ discharging):
-[images/chopper_control_code.png]
 
+```matlab
+function [Gate_High, Gate_Low] = fcn(Vdc_meas, Ibatt_meas, Vdc_ref)
+    % --- PART 1: Memory (Persistent Variables) ---
+    persistent int_err_v S_high
+    if isempty(int_err_v)
+        int_err_v = 0;
+        S_high = 0;
+    end
+
+    % --- Internal Constants ---
+    Ts = 5e-5;      % Sampling time (from your powergui)
+    h = 0.05;        % Hysteresis band
+    Kp_v = 0.1;     % PI Proportional Gain
+    Ki_v = 10;      % PI Integral Gain
+
+    % --- PART 2: Outer Loop (Voltage PI Control) ---
+    err_v = Vdc_meas - Vdc_ref ;
+    int_err_v = int_err_v + err_v * Ts;
+    
+    % Anti-windup (Clamping the integrator)
+    int_err_v = max(min(int_err_v, 5), -5); 
+    
+    % Calculate the Current Reference (I_ref)
+    I_ref = (Kp_v * err_v) + (Ki_v * int_err_v);
+
+    % --- PART 3: Current Saturation (Protection) ---
+    % Logic: Charging = Positive (+3.1A max), Discharging = Negative (-10A max)
+    I_max_charge = 3.1;   
+    I_max_disch  = -10.0; 
+    
+    % This line is Part 3: It clamps the reference to your hardware limits
+    I_ref_sat = max(I_max_disch, min(I_max_charge, I_ref));
+
+    % --- PART 4: Inner Loop (Hysteresis Current Control) ---
+    % S_high = 1: Top IGBT ON (Increases current)
+    % S_high = 0: Bottom IGBT ON (Decreases current)
+    if Ibatt_meas < (I_ref_sat - h)
+        S_high = 1;
+    elseif Ibatt_meas > (I_ref_sat + h)
+        S_high = 0;
+    end
+
+    % --- PART 5: Gate Outputs ---
+    Gate_High = S_high;
+    Gate_Low  = 1 - S_high; % Complementary switching
+end
+```
 ---
 
 ## 📈 Experimental Simulation Results
 
 The scope capture below verifies seamless bidirectional transitions. As power balance shifts, the battery current dynamically reverses direction across the zero-axis while holding the DC-Link voltage tightly regulated:
 
-[images/bidirectional_scope.png]
+
+![Bidirectional Scope](images/bidirectional_scope.png)
 
 ---
 
