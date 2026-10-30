@@ -40,13 +40,13 @@ The model parameters were configured to match our project hardware baseline:
 
 ### Characteristic Curves:
 
-[images/curves_model.png]
+![Curves Model](images/curves_model.png)
 
 Below are the resulting curves verifying exact alignment with theoretical limits under $1000\text{ W/m}^2$ irradiance:
 
 | P-V Power Curve | I-V Current Curve |
 | :---: | :---: |
-| [images/P-V%20Curve.png] | [images/I-V%20Curve.png] |
+| ![P-V Curve](images/P-V%20Curve.png) | ![I-V Curve](images/I-V%20Curve.png) |
 
 ---
 
@@ -60,18 +60,18 @@ The logic tree dictates whether to step the duty cycle up or down to navigate to
 
 | Decision Flowchart (`po_flowchart.png`) | Simulink Block Implementation (`MPPT_PO1.slx`) |
 | :---: | :---: |
-| [images/po_flowchart.png] | [images/mppt_logic.png] |
+| ![PO Flowchart](images/po_flowchart.png) | ![MPPT Logic](images/mppt_logic.png) |
 
 * **Embedded C Implementation (`mppt_po.c`):** Implements the state machine in fixed/floating-point C, handling sensor analog-to-digital conversions, threshold deadbands to suppress steady-state oscillation, and duty cycle saturation limits ($D_{min} = 0.02, D_{max} = 0.92$).
 
 ### Baseline Closed-Loop Testbench (`Incremental_conductance.slx`):
 
 Used during early design phases to evaluate dynamic tracking and compare convergence speed:
-[images/full_system.png]
+![Full System](images/full_system.png)
 
 | Tracking Performance Scope | Voltage, Current & Power Waveforms |
 | :---: | :---: |
-| [images/scope.png] | [images/scope1.png] |
+| ![Scope](images/scope.png) | ![Scope 1](images/scope1.png) |
 
 ---
 
@@ -90,7 +90,7 @@ To guarantee absolute maximum power extraction, we developed a custom **Global S
 
 | Central Array System Topology | Control Subsystems & Measurements |
 | :---: | :---: |
-| [images/Central_Boost_MPPT_with_check_Page1.png] | [images/Central_Boost_MPPT_with_check_Page2.png] |
+| ![Central Boost Page 1](images/Central_Boost_MPPT_with_check_Page1.png) | ![Central Boost Page 2](images/Central_Boost_MPPT_with_check_Page2.png) |
 
 ### Global Search Dynamic Scopes:
 
@@ -98,7 +98,7 @@ The scopes below illustrate the forced scan mechanism sweeping across power curv
 
 | Global Scan Power Tracking | V-I-P Scan Dynamics |
 | :---: | :---: |
-| [images/forced_mppt_logic2.png] | [images/forced_mppt_logic.png] |
+| ![Forced MPPT Logic 2](images/forced_mppt_logic2.png) | ![Forced MPPT Logic](images/forced_mppt_logic.png) |
 
 ---
 
@@ -108,4 +108,3 @@ The scopes below illustrate the forced scan mechanism sweeping across power curv
 2. For analytical I-V/P-V characteristics, run `pv_curves.slx`.
 3. To inspect P&O tracking logic, review `MPPT_PO1.slx` alongside `mppt_po.c`.
 4. For partial shading global tracking evaluation, run `Central_Boost_MPPT_with_check.slx`.
-
