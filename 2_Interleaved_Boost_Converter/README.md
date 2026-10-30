@@ -15,14 +15,10 @@ To ensure the charging station delivers sufficient energy without overloading th
 * **Target Daily Energy Delivery:** $E_{daily} = 42.5\text{ kWh/day}$
 * **Average Peak Sun Hours (Alexandria, Egypt):** $T_{peak} \approx 5\text{ hours}$
 * **Required PV Array Nominal Power:**
-  $$
-  P_{PV} = \frac{E_{daily}}{T_{peak}} = \frac{42.5\text{ kWh}}{5\text{ h}} = 8500\text{ W} \quad (\mathbf{8.5\ kW})
-  $$
+  $P_{PV} = \frac{E_{daily}}{T_{peak}} = \frac{42.5\text{ kWh}}{5\text{ h}} = 8500\text{ W} \quad (\mathbf{8.5\ kW})$
 * **Module Selection:** High-efficiency monocrystalline modules ($P_{module} = 710\text{ W}$, $V_m = 40.9\text{ V}$, $I_m = 17.36\text{ A}$).
 * **Total Module Count:**
-  $$
-  N_{modules} = \frac{8500\text{ W}}{710\text{ W}} \approx 12\text{ Modules}
-  $$
+  $N_{modules} = \frac{8500\text{ W}}{710\text{ W}} \approx 12\text{ Modules}$
 
 ### Overall Converter Parameter Specifications:
 
