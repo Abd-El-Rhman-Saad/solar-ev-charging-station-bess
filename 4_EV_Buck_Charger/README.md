@@ -1,12 +1,22 @@
 # 🚗 EV Buck Charger: Power Stage, Hardware Prototyping & Closed-Loop CC/CV Control
 
-This directory contains the analytical derivations, hardware parasitic calculations, discrete control design, and MATLAB/Simulink simulations for the **DC-DC Step-Down (Buck) Converter** stage. Within our Solar-Powered EV Charging Station, this power electronics interface steps down the regulated 600 V DC-Link bus to safely and efficiently charge the Electric Vehicle (EV) battery pack under an automated Constant-Current / Constant-Voltage (CC/CV) protocol.
-
-The models document our complete engineering lifecycle: from high-power open-loop continuous-conduction sizing ($50\text{ kW}$) to laboratory hardware prototyping under non-ideal parasitic conduction losses, culminating in a fully closed-loop multi-stage CC/CV battery charger with automated supervisory transition logic.
+> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
+> **Department:** Electrical Power and Machines Engineering  
+> **Core Focus:** Step-Down Power Stage Sizing, Measured Parasitic Compensation, Discrete PI Current Control & Automated CC/CV State Logic
 
 ---
 
-## 📌 File Architecture & Simulation Manifest
+## 📌 Executive Summary & Microgrid Operational Role
+
+In the Solar-Powered EV Charging Station microgrid, the **DC-DC Step-Down (Buck) Converter** serves as the regulated power interface between the central $600.0\text{ V}$ DC-link bus and the Electric Vehicle (EV) battery pack. Its operational mandate is to execute safe, highly efficient energy transfer while enforcing a rigorous **Constant-Current / Constant-Voltage (CC/CV)** battery charging protocol.
+
+The technical documentation and simulation models capture the complete engineering progression:
+1. **Utility-Scale Open-Loop Stage ($50\text{ kW}$):** Continuous Conduction Mode (CCM) verification, component sizing, and passive ripple filtering from $600.0\text{ V}$ down to $400.0\text{ V}$.
+2. **Laboratory Prototype Current Regulation:** Discrete-time PI current controller operating at $10\text{ kHz}$, incorporating real-world semiconductor drops and measured parasitic resistances.
+3. **Full Multi-Stage Automated CC/CV Charger:** Supervisory state-machine logic executing seamless mode transitions to maximize battery lifespan and eliminate overcharging.
+
+### File Architecture & Simulation Manifest
 
 | Simulation Model | Operational Mode | Power & Voltage Ratings | Primary Engineering Objective |
 | :--- | :---: | :---: | :--- |
@@ -18,29 +28,42 @@ The models document our complete engineering lifecycle: from high-power open-loo
 
 ## 📐 Non-Ideal Circuit Modeling & Parasitic Compensation
 
-In practical power electronics, theoretical duty cycles derived from ideal switches fail to achieve target output voltages due to internal semiconductor drops and parasitic line resistances. As derived in Section 6.3 of the project thesis, the hardware prototype incorporates measured non-idealities:
+In practical power electronics, theoretical duty cycles derived from idealized components fail to achieve the required output voltage due to internal semiconductor voltage drops and parasitic winding resistances. During laboratory bench testing (detailed in Chapter 6 of the thesis), our hardware prototype was parameterized with measured non-idealities:
 
 * Inductor DC winding resistance: $r_L = 1.9\ \Omega$
 * Output capacitor Equivalent Series Resistance (ESR): $r_C = 0.2\ \Omega$
 * Power MOSFET on-state channel resistance: $r_{\text{DS(on)}} = 0.025\ \Omega$
 * Freewheeling diode forward voltage drop: $V_{\text{fwd}} = 0.8\text{ V}$
-* Switching frequency: $f_{\text{sw}} = 10\text{ kHz}$
+* Nominal switching frequency: $f_{\text{sw}} = 10\text{ kHz}$
 
 ### Non-Ideal Duty Cycle Derivation ($D_u$)
 
-Applying volt-second balance across the inductor over a complete switching period ($T_{\text{sw}}$) yields:
+Applying volt-second balance across the energy storage inductor over a complete switching period ($T_{\text{sw}}$) under non-ideal conduction losses:
+
+$$\int_{0}^{T_{\text{sw}}} v_L(t)\, dt = 0$$
+
+During the switch ON-interval ($0 \le t \le D_u T_{\text{sw}}$):
+$$v_{L,\text{on}} = V_{\text{in}} - I_L \cdot r_{\text{DS(on)}} - I_L \cdot r_L - V_o$$
+
+During the switch OFF-interval ($D_u T_{\text{sw}} \le t \le T_{\text{sw}}$):
+$$v_{L,\text{off}} = -(V_o + I_L \cdot r_L + V_{\text{fwd}})$$
+
+Equating the volt-second integrals:
+$$\left[V_{\text{in}} - I_L \cdot r_{\text{DS(on)}} - I_L \cdot r_L - V_o\right] D_u - \left[V_o + I_L \cdot r_L + V_{\text{fwd}}\right] (1 - D_u) = 0$$
+
+Solving analytically for the non-ideal duty cycle ($D_u$):
 
 $$D_u = \frac{V_{\text{fwd}} + I_L \cdot r_L + V_o}{V_{\text{in}} - I_L \cdot r_{\text{DS(on)}} + V_{\text{fwd}}}$$
 
-For our hardware operating point ($V_{\text{in}} = 12.3\text{ V}$, $V_o = 3.7\text{ V}$, $R_{\text{load}} = 10\ \Omega \implies I_L = 0.37\text{ A}$):
+For our laboratory prototype operating point ($V_{\text{in}} = 12.3\text{ V}$, $V_o = 3.7\text{ V}$, $R_{\text{load}} = 10\ \Omega \implies I_L = 0.37\text{ A}$):
 
 $$D_u = \frac{0.8 + (0.37 \cdot 1.9) + 3.7}{12.3 - (0.37 \cdot 0.025) + 0.8} = \frac{5.203}{13.09075} \approx \mathbf{39.75\%}$$
 
-*(Compared to an ideal duty cycle of $D_{\text{ideal}} = \frac{3.7}{12.3} \approx 30.08\%$, the additional $9.67\%$ duty cycle directly compensates for internal semiconductor conduction losses).*
+> **Engineering Note on Conduction Drops:** Compared to an idealized duty cycle of $D_{\text{ideal}} = \frac{3.7}{12.3} \approx 30.08\%$, the actual required duty cycle is $39.75\%$. The additional $+9.67\%$ pulse width directly compensates for the forward barrier drop of the freewheeling diode and the $I^2 R$ copper losses in the inductor winding.
 
 ### Minimum Component Sizing & Hardware Margin
 
-Allowing an inductor current ripple target $\Delta I_L = 0.222\text{ A}$ (60% of average current) and an output voltage ripple target $\Delta V_o = 0.074\text{ V}$ (2% ripple tolerance):
+To ensure Continuous Conduction Mode (CCM) with an inductor current ripple target $\Delta I_L = 0.222\text{ A}$ (60% of average inductor current) and an output voltage ripple target $\Delta V_o = 0.074\text{ V}$ (2% ripple tolerance):
 
 $$L_{\text{min}} = \frac{\left[V_{\text{in}} - I_L(r_{\text{DS(on)}} + r_L) - V_o\right] \cdot D_u}{\Delta I_L \cdot f_{\text{sw}}} \approx 1.412\text{ mH} \implies \text{Selected Hardware: } \mathbf{2.0\text{ mH}}$$
 
@@ -50,7 +73,7 @@ $$C_{\text{min}} = \frac{\Delta I_L}{8 \cdot \Delta V_o \cdot f_{\text{sw}}} = \
 
 ## 🔋 Closed-Loop CC/CV Battery Charging Control
 
-Lithium-ion battery charging requires two distinct operational regimes to maximize energy intake while preventing cell overheating and chemical degradation:
+Lithium-ion vehicle traction packs require two distinct charging phases to ensure maximum energy density while strictly preventing cell thermal degradation:
 
 | Charging Regime | Operational Condition | Control Objective | Terminal Dynamics |
 | :--- | :--- | :--- | :--- |
@@ -59,66 +82,67 @@ Lithium-ion battery charging requires two distinct operational regimes to maximi
 
 ### CC-to-CV Supervisory Transition Logic
 
-The transition is governed by a high-speed comparator monitoring battery terminal potential:
-* While $V_{\text{batt}} < 420\text{ V}$, Switch 1 is closed, routing the inner current loop error to generate the PWM gating pulses.
-* As soon as $V_{\text{batt}}$ touches $420.0\text{ V}$ (at $t = 6.2\text{ s}$), Switch 1 opens and Switch 2 closes, transferring authority to the voltage clamp PI loop.
-* This bumpless transfer eliminates inductive current spikes and guarantees a smooth exponential taper down to float charge.
+The mode switchover is governed by an automated state comparator with saturation clamping:
+
+$$I_{\text{ref}} = \begin{cases} I_{\text{rated}} & \text{if } V_{\text{batt}} < 420.0\text{ V} \quad (\text{CC Mode}) \\[6pt] \text{PI}_v(420.0 - V_{\text{batt}}) & \text{if } V_{\text{batt}} \ge 420.0\text{ V} \quad (\text{CV Mode}) \end{cases}$$
+
+The inner current loop compares $I_{\text{ref}}$ against measured battery current $I_{\text{batt}}$, and the resulting control effort is modulated via a $10\text{ kHz}$ discrete PWM generator driving the high-side power switch.
 
 ---
 
 ## 📐 Architecture Schematics & Waveform Verification
 
 ### 1. High-Power Open-Loop Power Stage (50 kW)
-Evaluates continuous conduction step-down capability from the $600\text{ V}$ DC-Link bus delivering $50\text{ kW}$ to a high-power load ($V_{\text{in}} = 600\text{ V}$, $V_o = 400\text{ V}$, $L = 1\text{ mH}$, $C = 470\ \mu\text{F}$):
+Sizing model validating $600\text{ V} \to 400\text{ V}$ continuous conduction mode and passive filtering:
 
 <p align="center">
   <img src="images/buck_open_loop_power_stage_300dpi.png" width="90%" alt="High-Power Open-Loop Buck Power Stage" />
 </p>
 
 ### 2. Prototype-Scale Closed-Loop Current Control Model
-Low-voltage hardware replica featuring discrete PI current regulation ($I_{\text{ref}} = 0.74\text{ A}$) and sawtooth pulse-width modulation at $10\text{ kHz}$:
+Laboratory-scaled model regulating charging current under measured parasitic impedances:
 
 <p align="center">
   <img src="images/buck_prototype_current_control_300dpi.png" width="90%" alt="Prototype-Scale Closed-Loop Buck Model" />
 </p>
 
 ### 3. Prototype PI Current Regulation Loop
-Subsystem architecture showing error computation, discrete PI tuning, and carrier wave comparison:
+Subsystem view showing the discrete PI regulator, feedback current sensing, and PWM generator:
 
 <p align="center">
   <img src="images/buck_prototype_control_loop_300dpi.png" width="75%" alt="Prototype PI Current Control Loop" />
 </p>
 
 ### 4. Full Multi-Stage Closed-Loop CC/CV Charger Architecture
-The complete high-power vehicle charger integrating battery dynamic models, CC current loop, CV voltage clamp, and supervisory transfer logic:
+Top-level microgrid simulation interfacing the $600\text{ V}$ DC bus with the dynamic battery load:
 
 <p align="center">
   <img src="images/buck_cccv_full_system_300dpi.png" width="95%" alt="Full Multi-Stage Closed-Loop CC/CV Charger Architecture" />
 </p>
 
 ### 5. Dual-Loop CC/CV Control Subsystem
-Shows the parallel arrangement of the voltage and current PI regulators with automated logic switching:
+Supervisory state logic that monitors terminal voltage and smoothly hands over control from CC to CV:
 
 <p align="center">
   <img src="images/buck_cccv_control_loop_300dpi.png" width="75%" alt="Dual-Loop CC/CV Control Subsystem" />
 </p>
 
 ### 6. Complete Dynamic CC/CV Charging Cycle (Annotated Overview)
-The full charging profile across time ($0\text{ to }15\text{ s}$), illustrating the linear voltage ramp during Constant Current mode, the transition at $t = 6.2\text{ s}$, and the exponential current decay during Constant Voltage mode:
+Shows terminal voltage climbing to $420.0\text{ V}$, the seamless transition point ($t = 6.2\text{ s}$), and subsequent current decay:
 
 <p align="center">
   <img src="images/Buck_CCCV_Scope.png" width="90%" alt="Complete Dynamic CC/CV Charging Cycle Waveform" />
 </p>
 
 ### 7. High-Resolution 300 DPI Multi-Subplot Battery Dynamics
-Crisp vector-grade scope output displaying $V_{\text{bat}}$ (Top), $I_{\text{bat}}$ (Middle), and State of Charge $\text{SOC}$ (Bottom):
+Full-scale telemetry displaying instantaneous battery voltage ($V_{\text{bat}}$), charging current ($I_{\text{bat}}$), and State of Charge ($SOC$):
 
 <p align="center">
   <img src="images/buck_cccv_dynamic_curves_300dpi.png" width="85%" alt="300 DPI Multi-Subplot Battery Dynamics" />
 </p>
 
 ### 8. Zoomed Waveform View in CV Mode
-High-magnification view during Constant Voltage regulation ($t > 11.6\text{ s}$), verifying that voltage ripple is held under $\pm 0.05\text{ V}$ while current decays smoothly:
+Close-up transient scope proving sub-$0.1\text{ V}$ voltage ripple and stable current regulation:
 
 <p align="center">
   <img src="images/buck_cccv_zoomed_ripple_300dpi.png" width="85%" alt="Zoomed Waveform View in CV Mode" />
@@ -130,13 +154,10 @@ High-magnification view during Constant Voltage regulation ($t > 11.6\text{ s}$)
 
 ```text
 4_EV_Buck_Charger/
-├── README.md                                          # Master technical documentation & parasitic sizing report
-├── Buck_Power_Stage_Open_Loop.slx                     # High-power 50 kW open-loop buck power stage
-├── Buck_Prototype_Current_Control.slx                 # Scaled prototype current regulation model
-├── Buck_Closed_Loop_CCCV_Charger.slx                  # Full-scale CC/CV battery charger model
-├── universal_export_scopes_300dpi_v5.m               # Multi-subplot 300 DPI automated scope exporter
-├── universal_export_scopes_300dpi_v4.m               # Collision-free 300 DPI scope exporter
-├── universal_export_system_diagrams_300dpi_v4.m      # Hierarchical 300 DPI system diagram exporter
+├── README.md                                          # Master engineering documentation & parasitic report
+├── Buck_Power_Stage_Open_Loop.slx                     # High-power 50 kW open-loop sizing model
+├── Buck_Prototype_Current_Control.slx                 # Scaled prototype closed-loop current control model
+├── Buck_Closed_Loop_CCCV_Charger.slx                  # Full-scale multi-stage CC/CV battery charger model
 └── images/                                            # 300 DPI high-resolution architecture & scope assets
     ├── Buck_CCCV_Scope.png
     ├── buck_cccv_control_loop_300dpi.png
@@ -151,15 +172,13 @@ High-magnification view during Constant Voltage regulation ($t > 11.6\text{ s}$)
 ### Steps to Run the Charging Models
 
 1. **Prerequisites:** Open MATLAB/Simulink R2022b or later with Simscape Electrical.
-2. **Open-Loop Sizing Analysis:**
-   * Open `Buck_Power_Stage_Open_Loop.slx` and run the simulation to inspect inductor current ripple and capacitor voltage filtering.
-3. **Prototype Current Control Validation:**
-   * Open `Buck_Prototype_Current_Control.slx`.
-   * Observe how the discrete PI controller regulates charging current at exactly $0.74\text{ A}$ under $10\text{ kHz}$ switching.
-4. **Full CC/CV Battery Charging Execution:**
+2. **Execute Full CC/CV Simulation:**
    * Open `Buck_Closed_Loop_CCCV_Charger.slx`.
-   * Run the simulation ($T_{\text{stop}} = 15.0\text{ s}$).
-   * Open `Scope_0_Vbat_Ibat_SOC` to observe the full CC-to-CV transition at $t = 6.2\text{ s}$ as battery potential reaches $420.0\text{ V}$.
-5. **Solver Recommendations:**
+   * Click **Run** (`Ctrl+T`). Simulation duration is configured for $15.0\text{ s}$.
+   * Double-click the main Scope block to observe the transition from Constant Current ($-50.0\text{ A}$) to Constant Voltage ($420.0\text{ V}$) at $t \approx 6.2\text{ s}$.
+3. **Inspect Prototype Closed-Loop Current Control:**
+   * Open `Buck_Prototype_Current_Control.slx`.
+   * Verify how the discrete PI controller adjusts duty cycle to track the $0.74\text{ A}$ current setpoint under line resistance variations.
+4. **Solver Recommendations:**
    * Solver: `Discrete (no continuous states)`.
-   * Sample Time: $T_s = 20\ \mu\text{s}$ configured in the `powergui` block.
+   * Sample Time: $T_s = 1.0\ \mu\text{s}$ for high-power switching; $T_s = 50\ \mu\text{s}$ for supervisory control loops.
