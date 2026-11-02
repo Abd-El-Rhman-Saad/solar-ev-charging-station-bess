@@ -40,7 +40,7 @@ $$D_u = \frac{0.8 + (0.37 \cdot 1.9) + 3.7}{12.3 - (0.37 \cdot 0.025) + 0.8} = \
 
 ### Minimum Component Sizing & Hardware Margin
 
-Allowing an inductor current ripple target $\Delta I_L = 0.222\text{ A}$ ($60\%$ of average current) and an output voltage ripple target $\Delta V_o = 0.074\text{ V}$ ($2\%$ ripple tolerance):
+Allowing an inductor current ripple target $\Delta I_L = 0.222\text{ A}$ (60% of average current) and an output voltage ripple target $\Delta V_o = 0.074\text{ V}$ (2% ripple tolerance):
 
 $$L_{\text{min}} = \frac{\left[V_{\text{in}} - I_L(r_{\text{DS(on)}} + r_L) - V_o\right] \cdot D_u}{\Delta I_L \cdot f_{\text{sw}}} \approx 1.412\text{ mH} \implies \text{Selected Hardware: } \mathbf{2.0\text{ mH}}$$
 
