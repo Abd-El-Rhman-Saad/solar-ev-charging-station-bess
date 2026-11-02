@@ -90,7 +90,7 @@ The slight difference ($\approx 0.8\%$) represents converter switching losses, i
 2. **Mode 2 — Solar Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$):**
    * Under heavy cloud cover or partial shading, solar generation drops below EV charging demand.
    * The DC bus voltage starts dropping below $600\text{ V}$; the BESS cascade controller reverses current flow to **Boost mode** ($I_B < 0$), discharging the stationary battery to hold the DC link at $600\text{ V}$ and prevent EV charging interruptions.
-3. **Mode 3 — Standalone / Nighttime Operation ($P_{\text{PV}} = 0$):**
+3. **Mode 3 — Standalone / Nighttime Operation ($P_{\text{PV}} = 0$) [Design Operational Capability]:**
    * The BESS supplies $100\%$ of the energy required by the EV buck converter, functioning as a primary microgrid grid-forming voltage source.
 
 ---
@@ -146,7 +146,7 @@ Steps down the $600\text{ V}$ DC bus to charge the electric vehicle battery pack
 ## 📊 Comprehensive Simulation Results & Waveform Verification
 
 ### 1. DC-Link Voltage Regulation & Stability (600 V)
-During cold system startup, the DC bus exhibits a transient settling time of less than $0.5\text{ s}$ with a maximum voltage overshoot of less than $0.6\%$ ($603.8\text{ V}$ peak), settling firmly at exactly **$600.0\text{ V}$**:
+During cold system startup, the DC bus exhibits a transient settling time of less than $0.5\text{ s}$ with a maximum voltage overshoot bounded below $0.7\%$ ($\approx 0.63\%$, $603.8\text{ V}$ peak), settling firmly at exactly **$600.0\text{ V}$**:
 
 <p align="center">
   <img src="images/Scope_12_VDC_Voltage.png" width="90%" alt="DC-Link Bus Voltage Regulation Waveform" />
