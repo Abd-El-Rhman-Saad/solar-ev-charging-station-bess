@@ -237,14 +237,14 @@ High-speed serial telemetry stream ($115200\text{ baud}$) recording ADC current 
 
 ### Experimental Current Step Response Verification
 
-The closed-loop PI current control algorithm was evaluated across four sequential reference setpoints ($0.30\text{ A}$ to $0.60\text{ A}$). The digital multimeter verified accurate current tracking with steady-state error below $2.5\%$:
+The closed-loop PI current control algorithm was evaluated across four sequential reference setpoints ($0.30\text{ A}$ to $0.60\text{ A}$). The digital multimeter demonstrated accurate current tracking with steady-state tracking error bounded strictly within 5% across all setpoints (matching the physical multimeter displays and thesis Table 6.1):
 
-| Target Current ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Timer Register ($\text{OCR1A}$) | Steady-State Error ($\%$) | Verification Status |
-| :---: | :---: | :---: | :---: | :---: |
-| **$0.30\text{ A}$** | $0.29\text{ A}$ | $524$ | $-3.3\%$ | ✅ Verified |
-| **$0.40\text{ A}$** | $0.38\text{--}0.40\text{ A}$ | $501\text{--}502$ | $-2.5\%$ | ✅ Verified |
-| **$0.50\text{ A}$** | $0.48\text{--}0.50\text{ A}$ | $478$ | $-2.0\%$ | ✅ Verified |
-| **$0.60\text{ A}$** | $0.58\text{--}0.60\text{ A}$ | $452$ | $-1.6\%$ | ✅ Verified |
+| Target Current ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Steady-State Error | Verification Status |
+| :---: | :---: | :---: | :---: |
+| **$0.30\text{ A}$** | $0.29\text{ A}$ | $-3.3\%$ | ✅ Verified |
+| **$0.40\text{ A}$** | $0.38\text{ A}$ ($0.38\text{--}0.40\text{ A}$) | $-5.0\%\text{ to }0.0\%$ | ✅ Verified |
+| **$0.50\text{ A}$** | $0.48\text{ A}$ | $-4.0\%$ | ✅ Verified |
+| **$0.60\text{ A}$** | $0.58\text{ A}$ | $-3.3\%$ | ✅ Verified |
 
 ### Multimeter Measurement Gallery
 
