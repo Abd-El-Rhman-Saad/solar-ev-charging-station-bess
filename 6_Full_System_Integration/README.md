@@ -205,28 +205,113 @@ The P&O MPPT algorithm quickly finds the knee of the P-V curve at $V_{mp} = 243.
 
 ---
 
+## 🔍 Supplementary Telemetry & High-Magnification Waveform Gallery
+
+To provide deep transparency into the internal switching dynamics, ripple mitigation, and discrete control execution, this section details the supplementary high-resolution telemetry and microscopic waveform captures:
+
+### 1. Dual-Phase Interleaved Current Sharing & 180° Ripple Cancellation (Zoomed)
+High-magnification view showing the $180^\circ$ phase-staggered inductor currents ($I_{L1}$ and $I_{L2}$) interweaving at $20\text{ kHz}$ effective ripple frequency:
+
+<p align="center">
+  <img src="images/Scope_11_Imp_IL1_IL2_Zoomed.png" width="90%" alt="Zoomed Interleaved Current Sharing and Ripple Cancellation" />
+</p>
+
+### 2. Converter Stage Chopper Rail Voltages
+Probing the raw switched output rail voltages before LC filtering for both the BESS bidirectional chopper ($V_{\text{out}}$) and EV fast charger buck stage ($V_{\text{out,EV}}$):
+
+#### BESS Chopper Output Rail Voltage ($V_{\text{out}} = 600\text{ V}$)
+<p align="center">
+  <img src="images/Scope_1_Vout_Voltage.png" width="85%" alt="BESS Chopper Output Rail Voltage" />
+</p>
+
+#### BESS Rail Voltage Steady-State Ripple (Zoomed View)
+<p align="center">
+  <img src="images/Scope_1_Vout_Voltage_Zoomed.png" width="85%" alt="BESS Rail Voltage Steady-State Ripple Zoomed" />
+</p>
+
+#### EV Fast Charger Chopper Switching Voltage ($V_{\text{out,EV}} = 600\text{ V}$)
+<p align="center">
+  <img src="images/Scope_4_VoutEv_Voltage.png" width="85%" alt="EV Fast Charger Chopper Switching Voltage" />
+</p>
+
+#### EV Charger Switched PWM Rail Transitions (Zoomed View)
+<p align="center">
+  <img src="images/Scope_4_VoutEv_Voltage_Zoomed.png" width="85%" alt="EV Charger Switched PWM Rail Transitions Zoomed" />
+</p>
+
+### 3. MPPT Inner Current Loop Perturbations & Error Dynamics
+Detailed telemetry from the P&O MPPT tracking block and discrete PI carrier generation:
+
+#### MPPT Current Reference Error Signal ($\Delta I = I_{\text{ref}} - I_{pv}$)
+<p align="center">
+  <img src="images/Scope_MPPT2_2_Sum7.png" width="85%" alt="MPPT Current Error Summation Signal" />
+</p>
+
+#### High-Resolution Transient Steps of Current Error (Zoomed View)
+<p align="center">
+  <img src="images/Scope_MPPT2_2_Sum7_Zoomed.png" width="85%" alt="Zoomed View of MPPT Current Error Transient Steps" />
+</p>
+
+#### Phase-1 vs Phase-2 Inner PI Saturated Duty Cycles ($D_1, D_2$)
+<p align="center">
+  <img src="images/Scope_MPPT2_7_Saturation1_Duty_Ratio.png" width="85%" alt="Phase-1 PI Modulating Duty Ratio D1" />
+</p>
+
+<p align="center">
+  <img src="images/Scope_MPPT2_1_Saturation2_Duty_Ratio.png" width="85%" alt="Phase-2 PI Modulating Duty Ratio D2" />
+</p>
+
+#### Carrier Wave Modulation & Duty Cycle Stability (Zoomed Views)
+<p align="center">
+  <img src="images/Scope_MPPT2_6_Saturation_Duty_Ratio_Zoomed.png" width="85%" alt="Zoomed Phase-1 Duty Ratio Modulating Dynamic" />
+</p>
+
+<p align="center">
+  <img src="images/Scope_MPPT2_7_Saturation1_Duty_Ratio_Zoomed.png" width="85%" alt="Zoomed Sub-Microsecond PWM Pulse Modulation Node" />
+</p>
+
+### 4. Level-1 MPPT and Interleaved Boost Controller Subsystem
+Hierarchical subsystem structure encapsulating the dual inner current loops and discrete P&O algorithm:
+
+<p align="center">
+  <img src="images/System_05_L1_MPPT_and_Boost_Controller.png" width="85%" alt="Level-1 MPPT and Interleaved Boost Controller Subsystem" />
+</p>
+
+---
+
 ## 📂 Directory Structure & Simulation Execution Guide
 
 ```text
 6_Full_System_Integration/
-├── README.md                      # Comprehensive integration & control report
-├── Solar_EV_BESS_Full_Sys.slx     # Full multi-converter closed-loop Simulink model
-└── images/                        # 300 DPI architecture schematics and scope waveforms
+├── README.md                                          # Comprehensive integration & control report
+├── Solar_EV_BESS_Full_Sys.slx                         # Full multi-converter closed-loop Simulink model
+└── images/                                            # 300 DPI architecture schematics and scope waveforms
     ├── Scope_0_IB_Current.png
+    ├── Scope_1_Vout_Voltage.png
+    ├── Scope_1_Vout_Voltage_Zoomed.png
     ├── Scope_2_Pstorage_Power.png
     ├── Scope_3_IbEV_Current.png
+    ├── Scope_4_VoutEv_Voltage.png
+    ├── Scope_4_VoutEv_Voltage_Zoomed.png
     ├── Scope_5_PEV_Power.png
     ├── Scope_11_Imp_IL1_IL2.png
+    ├── Scope_11_Imp_IL1_IL2_Zoomed.png
     ├── Scope_12_VDC_Voltage.png
     ├── Scope_13_Vmp_Voltage.png
     ├── Scope_14_Pmppt_Power.png
+    ├── Scope_MPPT2_1_Saturation2_Duty_Ratio.png
+    ├── Scope_MPPT2_2_Sum7.png
+    ├── Scope_MPPT2_2_Sum7_Zoomed.png
     ├── Scope_MPPT2_6_Saturation_Duty_Ratio.png
+    ├── Scope_MPPT2_6_Saturation_Duty_Ratio_Zoomed.png
     ├── Scope_MPPT2_7_Saturation1_Duty_Ratio.png
+    ├── Scope_MPPT2_7_Saturation1_Duty_Ratio_Zoomed.png
     ├── System_00_Root_Solar_EV_BESS_Full_Sys_Full_Overview.png
     ├── System_01_L1_BESS_2Q_Bidirectional_Chopper.png
     ├── System_02_L1_BESS_Cascade_PI_Controller.png
     ├── System_03_L1_EV_Fast_Charger_Buck.png
     ├── System_04_L1_Interleaved_Boost_Converter.png
+    ├── System_05_L1_MPPT_and_Boost_Controller.png
     ├── System_06_L1_PV_Array_8_5kW.png
     └── System_07_L2_MPPT_and_Boost_Controller_MPPT2.png
 ```
