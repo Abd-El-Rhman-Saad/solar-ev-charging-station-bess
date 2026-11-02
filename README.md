@@ -1,6 +1,6 @@
 # ☀️ Solar-Powered EV Charging Station with Battery Energy Storage (BESS)
 
-![MATLAB/Simulink](https://img.shields.io/badge/MATLAB-Simulink_R2024b+-0076A8?logo=mathworks&logoColor=white)
+![MATLAB/Simulink](https://img.shields.io/badge/MATLAB-Simulink_R2024b-0076A8?logo=mathworks&logoColor=white)
 ![Simscape Electrical](https://img.shields.io/badge/Simscape-Specialized_Power_Systems-blue)
 ![Altium Designer](https://img.shields.io/badge/Altium_Designer-24-A6192E?logo=altiumdesigner&logoColor=white)
 ![Control Systems](https://img.shields.io/badge/Control-Closed--Loop_PI_%26_Cascade-success)
@@ -116,7 +116,7 @@ Beyond numerical simulation, functional converter prototypes were designed in **
 * **Switching Stage:** IRFP260N Power MOSFETs ($200\text{ V}$, $50\text{ A}$, $R_{\text{DS(on)}} = 0.04\ \Omega$) mounted on extruded aluminum heatsinks.
 * **Gate Drive Circuitry:** IR2111 half-bridge gate drivers with $1.0\ \mu\text{s}$ internal dead-time paired with 6N139 optocouplers ($5000\text{ V}_{\text{RMS}}$ isolation).
 * **Feedback Sensing:** ACS712-05B linear Hall-effect current sensor ($185\text{ mV/A}$ sensitivity) with hardware RC low-pass filtering.
-* **Digital Signal Generation:** Bare-metal ATmega328P 16-bit Timer 1 configured in Phase-Correct PWM mode, generating a clean $10.0\text{ kHz}$ carrier ($	ext{TOP} = 800$).
+* **Digital Signal Generation:** Bare-metal ATmega328P 16-bit Timer 1 configured in Phase-Correct PWM mode, generating a clean $10.0\text{ kHz}$ carrier ($\text{TOP} = 800$).
 
 ### Experimental Closed-Loop Current Tracking Results
 
@@ -148,7 +148,7 @@ The comprehensive academic documentation for this graduation project is compiled
 
 ### Software & Toolchain Prerequisites
 
-1. **MATLAB / Simulink:** Version R2022b or later with **Simscape Electrical** (Specialized Power Systems).
+1. **MATLAB / Simulink:** Version R2024b (or later) with **Simscape Electrical** (Specialized Power Systems).
 2. **PCB Design & EDA:** **Altium Designer 24** (or standard Gerber viewer / CAMtastic for manufacturing outputs).
 3. **Embedded Firmware Development:** Arduino IDE 2.x or PlatformIO with AVR toolchain for ATmega328P.
 
