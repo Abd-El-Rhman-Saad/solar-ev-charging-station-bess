@@ -1,5 +1,12 @@
 # ⚡ Two-Phase Interleaved Boost Converter & Full-Scale Sizing
 
+> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
+> **Department:** Electrical Power and Machines Engineering  
+> **Core Focus:** 8.5 kW Full-Scale Array Sizing, Two-Phase Ripple Cancellation Physics, High-Efficiency Boost Architecture & Active Current Sharing
+
+---
+
 This directory documents the design, analytical sizing, mathematical ripple modeling, and MATLAB/Simulink simulations for the **Two-Phase Interleaved Boost Converter** stage. Within our Solar-Powered EV Charging Station, this converter interfaces the photovoltaic array with the regulated 600 V DC-Link bus, providing high step-up conversion efficiency while minimizing input current ripple.
 
 The repository captures our complete engineering design progression: from baseline open-loop prototyping to decoupled control tuning via Thevenin equivalents, culminating in a fully closed-loop multi-phase converter with active current sharing.

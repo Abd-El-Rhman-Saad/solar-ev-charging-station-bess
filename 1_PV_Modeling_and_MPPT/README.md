@@ -1,5 +1,12 @@
 # ☀️ PV System Modeling & Advanced MPPT Implementation
 
+> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
+> **Department:** Electrical Power and Machines Engineering  
+> **Core Focus:** Single-Diode Photovoltaic Modeling, Operational Perturb & Observe (P&O), Embedded C Firmware & Partial Shading Sweep
+
+---
+
 This repository directory contains the physical modeling of Photovoltaic (PV) array characteristics and the progressive development of Maximum Power Point Tracking (MPPT) algorithms. The investigation progresses from baseline single-diode analytical modeling to the primary operational **Perturb & Observe (P&O)** tracking controller, supplemented by an analytical **Incremental Conductance (Inc. Cond.)** benchmark, and culminates in a supervisory **Global Scanning MPPT (Forced Sweep)** designed to eliminate local-maximum trapping under Partial Shading Conditions (PSC).
 
 ---

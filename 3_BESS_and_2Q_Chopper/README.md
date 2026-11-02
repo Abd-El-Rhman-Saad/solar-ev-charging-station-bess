@@ -1,6 +1,6 @@
 # 🔋 Battery Energy Storage System (BESS) & Two-Quadrant Chopper
 
-> **Subsystem Lead & Hardware Specialist:** Abd El-Rhman Muhammad Saad  
+> **Project Engineer:** Abd El-Rhman Muhammad Saad  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Bidirectional Power Stage Topology, Discrete Bilinear Control, Hysteresis Modulation & Embedded Microcontroller Implementation
