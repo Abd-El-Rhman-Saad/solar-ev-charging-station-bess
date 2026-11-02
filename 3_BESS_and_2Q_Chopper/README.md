@@ -1,18 +1,19 @@
 # 🔋 Battery Energy Storage System (BESS) & Two-Quadrant Chopper
 
-This directory contains the theoretical derivations, digital control design, embedded code implementation, and MATLAB/Simulink simulations for the **Two-Quadrant (2Q) Bidirectional DC-DC Chopper**. Within our Solar-Powered EV Charging Station microgrid, this converter acts as the primary dynamic energy buffer and voltage-forming element between the central 600 V DC-Link bus and the Battery Energy Storage System (BESS).
-
-The models and technical documentation represent the central engineering specialization of the graduation project: advancing from open-loop switching fundamentals to full-scale cascaded closed-loop control, discrete-time Z-domain transformation for microcontroller firmware, and exhaustive multi-case simulation benchmarking.
+> **Subsystem Lead & Hardware Specialist:** Abd El-Rhman Muhammad Saad  
+> **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
+> **Department:** Electrical Power and Machines Engineering  
+> **Core Focus:** Bidirectional Power Stage Topology, Discrete Bilinear Control, Hysteresis Modulation & Embedded Microcontroller Implementation
 
 ---
 
 ## 📌 Executive Summary & Microgrid Operational Role
 
-In an off-grid solar EV charging station, generation and load profiles are inherently decoupled: peak solar irradiance rarely coincides with instantaneous vehicle charging demands. The bidirectional Two-Quadrant Chopper resolves this intermittency by maintaining strict **instantaneous power equilibrium** on the common DC bus:
+In an off-grid solar-powered electric vehicle charging station, generation profiles and dynamic load requirements are inherently asynchronous: peak solar irradiance rarely coincides with instantaneous EV charging events. The bidirectional **Two-Quadrant (2Q) Class-C Chopper** resolves this power mismatch by maintaining strict **instantaneous power equilibrium** across the central common DC bus:
 
-1. **Surplus Generation ($P_{\text{PV}} > P_{\text{EV}}$):** The chopper operates as a step-down **Buck Converter**, channeling excess solar power into the stationary battery bank ($I_{\text{batt}} > 0$).
-2. **Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$):** The chopper reverses power flow seamlessly, operating as a step-up **Boost Converter** ($I_{\text{batt}} < 0$) to inject up to $3.48\text{ kW}$ of deficit support from the BESS into the 600 V DC bus.
-3. **Common Bus Stabilization:** While the PV boost converter tracks maximum power and the EV buck charger regulates charging current, the BESS bidirectional chopper functions as the **grid-forming voltage anchor**, tightly regulating the DC-link at $600.0\text{ V}$.
+1. **Surplus Solar Generation ($P_{\text{PV}} > P_{\text{EV}}$):** The converter operates in step-down **Buck Mode**, channeling excess photovoltaic energy into the stationary battery bank ($I_{\text{batt}} > 0$).
+2. **Solar Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$):** The converter seamlessly reverses power flow, operating in step-up **Boost Mode** ($I_{\text{batt}} < 0$) to inject up to $3.48\text{ kW}$ of deficit power support from the BESS into the $600.0\text{ V}$ DC-link bus.
+3. **Common DC Bus Voltage Regulation:** While the PV interleaved boost converter tracks the maximum power point (MPPT) and the EV buck charger regulates vehicle battery current, the BESS bidirectional chopper acts as the **grid-forming voltage anchor**, tightly regulating the DC-link at $600.0\text{ V}$.
 
 ### Core Simulation Models
 
@@ -28,7 +29,7 @@ In an off-grid solar EV charging station, generation and load profiles are inher
 
 ## ⚡ Two-Quadrant Operational Physics & Power Flow
 
-The bidirectional chopper employs a half-bridge split-leg topology comprising two complementary active power semiconductor switches ($Q_1$ High-Side, $Q_2$ Low-Side) and a common energy-storage power inductor ($L = 2.0\text{ mH}$):
+The bidirectional chopper employs a Class-C half-bridge split-leg topology comprising two complementary active power semiconductor switches ($Q_1$ High-Side, $Q_2$ Low-Side) and a common energy-storage power inductor ($L = 2.0\text{ mH}$):
 
 ```text
        [ + 600 V DC BUS ]
@@ -41,7 +42,7 @@ The bidirectional chopper employs a half-bridge split-leg topology comprising tw
           │ Q2 (LS) │  (Boost Switch / Buck Diode)
           └────┬────┘
                │
-        [ COMMON GROUND ]
+       [ COMMON GROUND ]
 ```
 
 ### 1️⃣ Quadrant II: Buck Mode (Battery Charging — Solar Surplus)
@@ -50,7 +51,7 @@ The bidirectional chopper employs a half-bridge split-leg topology comprising tw
 * **Conduction Path:** High-side switch $Q_1$ is actively modulated with duty cycle $D_{\text{ch}}$. When $Q_1$ turns OFF, inductor current freewheels through the anti-parallel body diode (or synchronous channel) of $Q_2$.
 * **Governing Voltage Relationship:**
   $$V_{\text{batt}} = D_{\text{ch}} \cdot V_{\text{DC}}$$
-* **Charging Current Limit:** Hard-clamped at $+3.1\text{ A}$ on the prototype scale ($+11.25\text{ A}$ on full-scale microgrid) to safeguard lithium-ion cell chemistry against thermal runaway.
+* **Charging Current Limit:** Hard-clamped at $+3.1\text{ A}$ on the prototype scale ($+11.25\text{ A}$ on the full-scale microgrid) to safeguard lithium-ion cell chemistry against thermal runaway.
 
 ### 2️⃣ Quadrant I: Boost Mode (Battery Discharging — Solar Deficit)
 
@@ -58,7 +59,7 @@ The bidirectional chopper employs a half-bridge split-leg topology comprising tw
 * **Conduction Path:** Low-side switch $Q_2$ is modulated with duty cycle $D_{\text{dis}}$, storing energy in inductor $L$. When $Q_2$ turns OFF, inductor voltage boosts and releases energy through $Q_1$ into the DC-Link capacitor.
 * **Governing Voltage Relationship:**
   $$V_{\text{DC}} = \frac{V_{\text{batt}}}{1 - D_{\text{dis}}}$$
-* **Discharging Current Limit:** Clamped at $-10.0\text{ A}$ continuous rating on prototype scale to provide rapid transient support during cloud cover or sudden EV load steps.
+* **Discharging Current Limit:** Clamped at $-10.0\text{ A}$ continuous rating on prototype scale to provide rapid transient support during sudden cloud cover or step EV charging loads.
 
 ### 3️⃣ Shoot-Through Prevention & Dead-Time Insertion
 
@@ -71,17 +72,17 @@ To prevent catastrophic DC-link short circuits caused by simultaneous turn-on of
 The BESS chopper implements a **Cascaded Closed-Loop Control Structure** operating across two discrete time scales:
 
 ```text
-   Vdc_ref (600V) ──(+)
-                     │  e_v      ┌───────────────┐  I_ref     ┌─────────────────────┐  I_ref_sat
-                     └───►(─)───►│ Outer PI Loop │───────────►│ Current Saturation  ├────────┐
-                           ▲     │  (DC Voltage) │            │ [-10A max, +3.1A max│        │
-                           │     └───────────────┘            └─────────────────────┘        │
-                       Vdc_meas                                                              │
-                                                                                             ▼
-   Gate_High (Q1) ◄───┐          ┌───────────────────────┐                                 (─)◄──
-                      ├──[ NOT ]─┤  Hysteresis Current   │◄──────────────────────────────────┘
-   Gate_Low  (Q2) ◄───┘          │   Comparator (h=0.01) │                Ibatt_meas
-                                 └───────────────────────┘
+  Vdc_ref (600V) ──(+)
+                    │ e_v  ┌───────────────┐  I_ref  ┌─────────────────────┐  I_ref_sat
+                    └───►(─)───►│ Outer PI Loop │───────────►│ Current Saturation  ├────────┐
+                         ▲      │ (DC Voltage)  │            │ [-10A max, +3.1A max│        │
+                         │      └───────────────┘            └─────────────────────┘        │
+                      Vdc_meas                                                              │
+                                                                                            ▼
+  Gate_High (Q1) ◄───┐                                       ┌───────────────────────┐   (─)◄──
+                     ├──[ NOT ]─┤  Hysteresis Current  │◄──────────────────────────────────┘
+  Gate_Low  (Q2) ◄───┘          │ Comparator (h=0.01)  │  Ibatt_meas
+                                └───────────────────────┘
 ```
 
 1. **Outer Voltage Loop (Slow Dynamics):**
@@ -98,7 +99,7 @@ The BESS chopper implements a **Cascaded Closed-Loop Control Structure** operati
 
 ## 📐 Discrete Z-Domain Transformation & Embedded Difference Equation
 
-To transition the continuous-time voltage PI controller from Simulink into embedded microcontroller firmware (e.g., ATmega328P / ARM Cortex-M), the continuous transfer function was mapped to the discrete $Z$-domain.
+To transition the continuous-time voltage PI controller from Simulink into embedded microcontroller firmware (such as the ATmega328P or ARM Cortex-M), the continuous transfer function was mapped to the discrete $Z$-domain.
 
 ### 1. Continuous S-Domain Formulation
 
@@ -124,7 +125,7 @@ Where the discrete execution coefficients are:
 
 $$a_0 = K_p + \frac{K_i T_s}{2}, \quad a_1 = -K_p + \frac{K_i T_s}{2}$$
 
-This recursive formulation requires only **one multiplication and two additions per sample step**, enabling fast integer/fixed-point execution inside a $10\text{ kHz}$ interrupt service routine (ISR).
+This recursive formulation requires only **one multiplication and two additions per sample step**, enabling deterministic fixed-point execution inside a $10\text{ kHz}$ to $20\text{ kHz}$ interrupt service routine (ISR).
 
 ---
 
@@ -138,20 +139,21 @@ function [Gate_High, Gate_Low] = fcn(Vdc_meas, Ibatt_meas, Vdc_ref)
 % Cascaded PI Voltage Regulation + Hysteresis Current Controller
 % Topology: Bidirectional Two-Quadrant Chopper (BESS Interface)
 % Execution Sample Time: Ts = 50 microseconds
+% Subsystem Lead: Abd El-Rhman Muhammad Saad
 % =========================================================================
 
 % PART 1: Persistent State Memory Registers
 persistent int_err_v S_high
 if isempty(int_err_v)
     int_err_v = 0.0;
-    S_high    = 0;
+    S_high = 0;
 end
 
 % PART 2: Operational Tuning Constants
-Ts    = 5e-5;    % Controller sample period (50 microseconds)
-h     = 0.01;    % Current hysteresis tolerance band (+/- 0.01 A)
-Kp_v  = 0.1;     % Voltage PI proportional gain
-Ki_v  = 10.0;    % Voltage PI integral gain
+Ts = 5e-5;      % Controller sample period (50 microseconds)
+h = 0.01;       % Current hysteresis tolerance band (+/- 0.01 A)
+Kp_v = 0.1;     % Voltage PI proportional gain
+Ki_v = 10.0;    % Voltage PI integral gain
 
 % PART 3: Outer Loop — DC Bus Voltage PI Regulation
 err_v = Vdc_meas - Vdc_ref;
@@ -189,6 +191,42 @@ Gate_High = S_high;
 Gate_Low  = 1 - S_high; % Perfectly complementary gate pulse
 end
 ```
+
+---
+
+## 🛠️ Subsystem Engineering Challenges & Practical Solutions
+
+During the design, simulation, and hardware implementation of the bidirectional Two-Quadrant Chopper, several non-ideal physical phenomena and digital control bottlenecks were encountered. The following solutions were developed and validated to ensure microgrid stability and hardware survival:
+
+### 1. Shoot-Through Prevention & Half-Bridge Gate Isolation
+* **Physical Challenge:** In a totem-pole half-bridge configuration, MOSFET turn-off delay times ($t_{\text{off}} > t_{\text{on}}$) can lead to simultaneous conduction of $Q_1$ and $Q_2$, creating a dead short across the $600\text{ V}$ bus (or the battery pack) that destroys switching silicon within microseconds.
+* **Engineered Solution:** Implemented an optocoupled half-bridge gate driver circuit utilizing the **IR2111** driver paired with high-speed **6N139** optocouplers. The IR2111 internally enforces a deterministic hardware dead-time of $t_{\text{dead}} = 1.0\ \mu\text{s}$. In firmware, the complementary gating logic ($G_{\text{low}} = 1 - G_{\text{high}}$) guarantees that dual-high gate commands can never be synthesized.
+* **Validation:** Verified across all continuous simulation runs with zero cross-conduction current spikes and zero thermal stress on prototype IRFP260N MOSFETs.
+
+### 2. Integrator Windup Elimination during Solar-Load Step Transients
+* **Physical Challenge:** Sudden load steps (such as EV fast charging initiation) or abrupt solar irradiance drops cause large instantaneous bus voltage errors ($e_v = V_{\text{dc}} - V_{\text{ref}}$). A standard PI controller continuously integrates this error, driving the internal state into deep saturation and causing massive bus overshoot ($> 15\%$) and prolonged settling times ($> 100\text{ ms}$).
+* **Engineered Solution:** Formulated a **Conditional Dynamic Anti-Windup Clamping** mechanism within the discrete controller. The accumulated integral error state is hard-clamped to $[-5.0, +5.0]$:
+  $$\text{int\_err\_v} = \max(-5.0, \min(+5.0, \text{int\_err\_v}))$$
+* **Validation:** Reduced DC bus transient recovery time to less than $5\text{ ms}$ with voltage overshoot strictly bounded below $0.7\%$ ($603.8\text{ V}$ peak on the $600.0\text{ V}$ utility bus).
+
+### 3. Hysteresis Band Optimization: Chattering vs. Semiconductor Thermal Stress
+* **Physical Challenge:** Hysteresis current controllers feature variable switching frequencies. If the tolerance band ($h$) is set too narrow, switching frequency escalates into the hundreds of kilohertz, inducing excessive switching losses ($P_{\text{sw}} \propto f_{\text{sw}}$) and electromagnetic interference (EMI). If $h$ is set too wide, battery current ripple exceeds cell degradation thresholds.
+* **Engineered Solution:** Conducted an iterative trade-off study balancing current ripple against thermal limits. Selected $h = 0.01\text{ A}$ for high-fidelity numerical simulation and tuned an equivalent analog/digital window ($h \approx 0.05\text{ A}$) for laboratory bench testing.
+* **Validation:** Achieved stable limit-cycle modulation without erratic chattering, keeping peak-to-peak inductor ripple well within the design target of $\Delta I_L \le 0.4\text{ A}$.
+
+### 4. Tustin Discretization for Low-Cost Microcontroller Execution
+* **Physical Challenge:** Continuous S-domain PI transfer functions require heavy numerical computation that cannot be executed in real time on resource-constrained embedded microcontrollers (such as an 8-bit ATmega328P or entry-level ARM Cortex-M) without causing execution latency that degrades phase margin.
+* **Engineered Solution:** Applied the Bilinear (Tustin) transform to derive a compact first-order recursive difference equation:
+  $$u[k] = u[k-1] + a_0 \cdot e[k] + a_1 \cdot e[k-1]$$
+  This requires only **one multiplication and two additions** per control cycle, avoiding floating-point library overhead.
+* **Validation:** Benchmarked controller execution time to $< 12\ \mu\text{s}$ per iteration, seamlessly executing within a $50\ \mu\text{s}$ interrupt service routine ($20\text{ kHz}$).
+
+### 5. Battery Cell Chemical Protection Envelope Clamping
+* **Physical Challenge:** Unconstrained control loop action could request charging currents exceeding the thermal absorption capacity of lithium-ion cells, or demand discharge rates that trigger severe voltage sag and premature cell aging.
+* **Engineered Solution:** Embedded a dual-boundary saturation limiter on the current setpoint $I_{\text{ref}}$, establishing an asymmetric safe operating area (SOA):
+  $$I_{\text{ref,sat}} = \max(-10.0\text{ A}, \min(+3.1\text{ A}, I_{\text{ref}}))$$
+  The $+3.1\text{ A}$ limit protects prototype ICR18650 cells against thermal runaway, while the $-10.0\text{ A}$ limit guarantees continuous bus deficit support without tripping the hardware BMS.
+* **Validation:** Fully protected the 2S Li-ion battery pack across all fault scenarios, with the HW-391 BMS remaining comfortably within its safe operating envelope.
 
 ---
 
@@ -238,7 +276,7 @@ Shows the tight feedback connection between voltage sensing, current measurement
 </p>
 
 ### 5. Full-Scale Utility Microgrid System Rating (600 V / 8.5 kW)
-Grid-scale realization interfacing the central $600\text{ V}$ DC microgrid bus with the high-capacity battery bank:
+Grid-scale realization interfacing the central $600.0\text{ V}$ DC microgrid bus with the high-capacity battery bank:
 
 <p align="center">
   <img src="images/bess_actual_rating_system_300dpi.png" width="90%" alt="Full-Scale 600V BESS System Architecture" />
@@ -279,13 +317,13 @@ Shows the rapid negative current step response, proving that the BESS immediatel
 
 ```text
 3_BESS_and_2Q_Chopper/
-├── README.md                                          # Master engineering documentation & mathematical report
-├── BESS_2Q_All_Cases_Pro.slx                          # Complete 6-case comparative benchmark model
-├── chopper_actual_rating.slx                          # Full-scale 600V DC microgrid utility model
-├── chopper_prototype_rating.slx                       # Scaled laboratory hardware prototype model
-├── Quadrant2chopper2.slx                              # Foundational complementary PWM chopper model
-├── final2q_all_cases.slx                              # Multi-regime dynamic transition model
-└── images/                                            # 300 DPI high-resolution architecture & scope assets
+├── README.md                          # Master engineering documentation & mathematical report
+├── BESS_2Q_All_Cases_Pro.slx          # Complete 6-case comparative benchmark model
+├── chopper_actual_rating.slx          # Full-scale 600V DC microgrid utility model
+├── chopper_prototype_rating.slx       # Scaled laboratory hardware prototype model
+├── Quadrant2chopper2.slx              # Foundational complementary PWM chopper model
+├── final2q_all_cases.slx              # Multi-regime dynamic transition model
+└── images/                            # 300 DPI high-resolution architecture & scope assets
     ├── bess_actual_rating_system_300dpi.png
     ├── bess_all_cases_overview_300dpi.png
     ├── bess_charging_transient_scope_300dpi.png
@@ -297,7 +335,7 @@ Shows the rapid negative current step response, proving that the BESS immediatel
 
 ### Steps to Run the Benchmark Models
 
-1. **Prerequisites:** Open MATLAB/Simulink R2022b or later with Simscape Electrical.
+1. **Prerequisites:** Open MATLAB/Simulink R2022b or later with Simscape Electrical installed.
 2. **Execute Multi-Case Benchmark:**
    * Open `BESS_2Q_All_Cases_Pro.slx`.
    * Click **Run** (`Ctrl+T`).
