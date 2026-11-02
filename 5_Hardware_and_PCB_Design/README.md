@@ -33,12 +33,16 @@ The hardware design process follows standard industrial power electronics EDA st
 ### Altium Schematic Architecture
 Detailed circuit design showing the gate-drive optocoupler isolation stage, bootstrap circuitry, half-bridge MOSFET leg, and analog sensing connections:
 
-![Altium Schematic Capture](images/schematic.png)
+<p align="center">
+  <img src="images/schematic.png" width="95%" alt="Altium Schematic Architecture" />
+</p>
 
 ### Altium 3D Isometric Board Layout
 3D CAD rendering of the fabricated two-quadrant board displaying component placement, toroidal inductors, radial electrolytic filter capacitors, and heatsink mounting:
 
-![Altium PCB 3D Isometric Board Layout](images/pcb_3d_isometric.png)
+<p align="center">
+  <img src="images/pcb_3d_isometric.png" width="90%" alt="Altium PCB 3D Isometric Board Layout" />
+</p>
 
 ---
 
@@ -51,7 +55,7 @@ Designing PCBs for high-frequency switching converters ($10\text{ kHz}$ to $100\
    * Both ground domains meet at a single physical point (near the bulk filter capacitor return) to prevent ground loops from injecting switching noise into ADC readings.
 
 2. **Gate Driver Loop Inductance Minimization:**
-   * High $\frac{di}{dt}$ gate drive loops between the **IR2111** driver output, MOSFET gate, and source terminal were routed using short, wide, parallel traces to minimize parasitic inductance ($L_{\text{gate}}$).
+   * High $di/dt$ gate drive loops between the **IR2111** driver output, MOSFET gate, and source terminal were routed using short, wide, parallel traces to minimize parasitic inductance ($L_{\text{gate}}$).
    * A dedicated damping gate resistor ($22\ \Omega$) is placed immediately adjacent to the MOSFET gate pin to suppress ringing caused by gate capacitance ($C_{iss}$) and trace inductance.
 
 3. **Thermal Management & Low-ESR Polygon Pours:**
@@ -82,12 +86,16 @@ Experimental validation of the physical converters was carried out in the Electr
 ### Assembled & Soldered 2Q Chopper PCB
 Physical prototype of the Two-Quadrant Chopper after populated through-hole assembly, showing the IRFP260N power stage, gate-drive isolation, and toroidal magnetic core:
 
-![Physical Populated 2Q Chopper PCB Layout](images/pcb_actual_board.jpg)
+<p align="center">
+  <img src="images/pcb_actual_board.jpg" width="85%" alt="Physical Populated 2Q Chopper PCB Assembly" />
+</p>
 
 ### Complete Laboratory Experimental Bench Setup
 Full bench-testing configuration featuring the programmable DC power supply, breadboard interface, Arduino Uno digital controller, and active load arrangement:
 
-![Complete Hardware Bench Testing Setup](images/all_hardware_system.png)
+<p align="center">
+  <img src="images/all_hardware_system.png" width="90%" alt="Complete Hardware Bench Testing Setup" />
+</p>
 
 ---
 
@@ -97,19 +105,19 @@ The following table details the primary active semiconductors, passive power com
 
 | Category | Component / IC | Part Number / Specs | Functional Role in System |
 | :--- | :--- | :--- | :--- |
-| **Power Switches** | N-Channel Power MOSFET | **IRFP260N** (200V, 50A, $R_{DS(on)}=0.04\,\Omega$, TO-247AC) | Primary high-efficiency synchronous switching elements |
+| **Power Switches** | N-Channel Power MOSFET | **IRFP260N** (200V, 50A, $R_{DS(on)}=0.04\ \Omega$, TO-247AC) | Primary high-efficiency synchronous switching elements |
 | **Gate Driver** | High-Voltage Half-Bridge Driver | **IR2111PBF / IR2110** (600V floating high-side, 0.5A/0.25A) | Level-shifts 5V logic PWM to 12V gate drive with dead-time |
-| **Galvanic Isolation** | High-Gain Optocoupler | **6N139 / 6N137** (Split-Darlington, $5000\,\text{V}_{\text{RMS}}$ isolation) | Optically isolates Arduino digital pins from power ground noise |
+| **Galvanic Isolation** | High-Gain Optocoupler | **6N139 / 6N137** (Split-Darlington, $5000\ \text{V}_{\text{RMS}}$ isolation) | Optically isolates Arduino digital pins from power ground noise |
 | **Power Diodes** | Fast Schottky Rectifiers | **MBR20100CT** (Dual 100V, 20A) & **UF4007** / **1N4148** | Bootstrap diode and freewheeling clamp protection |
-| **Current Sensing** | Hall-Effect Sensor Module | **ACS712ELC-05A** ($\pm 5\,\text{A}$, $185\,\text{mV/A}$, $2.4\,\text{kV}_{\text{RMS}}$ isolation) | Bidirectional feedback current measurement for PI control |
-| **Voltage Sensing** | Resistive Divider Module | **DC 0–25V Module** ($5:1$ ratio, $30\,\text{k}\Omega + 7.5\,\text{k}\Omega$, 1% precision) | Step-down bus and battery voltage sensing for Arduino ADC |
+| **Current Sensing** | Hall-Effect Sensor Module | **ACS712ELC-05A** ($\pm 5\text{ A}$, $185\text{ mV/A}$, $2.4\text{ kV}_{\text{RMS}}$ isolation) | Bidirectional feedback current measurement for PI control |
+| **Voltage Sensing** | Resistive Divider Module | **DC 0–25V Module** ($5:1$ ratio, $30\text{ k}\Omega + 7.5\text{ k}\Omega$, 1% precision) | Step-down bus and battery voltage sensing for Arduino ADC |
 | **Microcontroller** | Embedded Controller Board | **Arduino Uno Rev3** (ATmega328P @ 16 MHz) | Real-time 10 kHz PWM generation, ADC sampling, PI routine |
-| **EV Battery Load** | Li-Ion Battery Simulator Pack | **2S IMR14500** ($7.4\,\text{V}$ nominal, $800\,\text{mAh}$, $6.0\text{--}8.4\,\text{V}$ cutoff) | Scaled EV battery model for charging profile validation |
-| **BESS Storage** | Li-Ion Energy Storage Pack | **2S ICR18650** ($7.4\,\text{V}$ nominal, $2.55\,\text{Ah}$, EVE Energy) | Stationary energy storage pack for solar microgrid buffer |
-| **Battery Management** | 2S Li-ion Protection Board | **HW-391 BMS** ($20\,\text{A}$ max discharge, overcharge/discharge protection) | Hardware cell balancing and safety cutoff for 2S pack |
-| **Power Magnetics** | High-Current Inductor | **Toroidal Power Choke** ($2.0\,\text{mH}$, low core saturation) | Main inductive energy storage element for DC-DC stage |
-| **Filter Capacitors** | Bulk & Decoupling Capacitors | **$220\,\mu\text{F}$ / $22\,\mu\text{F}$ / $10\,\mu\text{F}$** Electrolytic + **$0.1\,\mu\text{F}$** Ceramic | Output voltage ripple smoothing and IC supply decoupling |
-| **Gate Resistors** | Metal-Film Resistors | **$22\,\Omega$**, **$330\,\Omega$**, **$1\,\text{k}\Omega$**, **$10\,\text{k}\Omega$** (1/4 W) | Gate damping, LED current limiting, and active pull-down |
+| **EV Battery Load** | Li-Ion Battery Simulator Pack | **2S IMR14500** ($7.4\text{ V}$ nominal, $800\text{ mAh}$, $6.0\text{--}8.4\text{ V}$ cutoff) | Scaled EV battery model for charging profile validation |
+| **BESS Storage** | Li-Ion Energy Storage Pack | **2S ICR18650** ($7.4\text{ V}$ nominal, $2.55\text{ Ah}$, EVE Energy) | Stationary energy storage pack for solar microgrid buffer |
+| **Battery Management** | 2S Li-ion Protection Board | **HW-391 BMS** ($20\text{ A}$ max discharge, overcharge/discharge protection) | Hardware cell balancing and safety cutoff for 2S pack |
+| **Power Magnetics** | High-Current Inductor | **Toroidal Power Choke** ($2.0\text{ mH}$, low core saturation) | Main inductive energy storage element for DC-DC stage |
+| **Filter Capacitors** | Bulk & Decoupling Capacitors | **$220\ \mu\text{F}$ / $22\ \mu\text{F}$ / $10\ \mu\text{F}$** Electrolytic + **$0.1\ \mu\text{F}$** Ceramic | Output voltage ripple smoothing and IC supply decoupling |
+| **Gate Resistors** | Metal-Film Resistors | **$22\ \Omega$**, **$330\ \Omega$**, **$1\text{ k}\Omega$**, **$10\text{ k}\Omega$** (1/4 W) | Gate damping, LED current limiting, and active pull-down |
 
 ---
 
@@ -199,21 +207,33 @@ void loop() {
 
 ## 📊 Experimental Bench Validation & Measurement Results
 
-### Switching Waveform & Voltage Stability
+### 1. 10 kHz Clean Gate-Drive Pulse Waveform
+The gate driver circuits and power converter switching nodes were probed using the **Hantek DSO4254B** oscilloscope. The clean gate pulses confirm minimal rise/fall ringing ($t_r < 80\text{ ns}$):
 
-The gate driver circuits and power converter switching nodes were probed using the **Hantek DSO4254B** oscilloscope. The clean gate pulses confirm minimal rise/fall ringing ($t_r < 80\text{ ns}$) and absolute stability of the output DC bus:
+<p align="center">
+  <img src="images/waveform_gate.jpg" width="85%" alt="10 kHz Clean Gate-Drive Pulse Waveform" />
+</p>
 
-| 10 kHz Clean Gate-Drive Pulse Waveform | Output DC Voltage Ripple & Mean Stability |
-| :---: | :---: |
-| <img src="images/waveform_gate.jpg" height="220" alt="10 kHz Clean Gate-Drive Pulse Waveform" /> | <img src="images/voltage_scope.jpeg" height="220" alt="Output DC Voltage Ripple & Mean Stability" /> |
+### 2. Output DC Voltage Ripple & Mean Stability
+Measurement of output DC bus potential under full load, verifying negligible voltage ripple and excellent DC regulation:
 
-### Closed-Loop Dynamic Tracking Setup
+<p align="center">
+  <img src="images/voltage_scope.jpeg" width="85%" alt="Output DC Voltage Ripple and Mean Stability" />
+</p>
 
-The closed-loop current control was benchmarked under real-time passive and battery loads. The Dell workstation logged telemetry via Serial Monitor while the **UNI-T UT89X** digital multimeter verified exact current tracking:
+### 3. Real-Time Hardware Testing Bench
+The closed-loop current control was benchmarked under real-time passive and battery loads with the **UNI-T UT89X** digital multimeter measuring current feedback:
 
-| Real-Time Hardware Testing with UNI-T Multimeter | Arduino Serial Monitor Telemetry Log |
-| :---: | :---: |
-| <img src="images/bench_closed_loop_test.jpg" height="220" alt="Real-Time Hardware Testing with UNI-T Multimeter" /> | <img src="images/serial_monitor.jpg" height="220" alt="Arduino Serial Monitor Telemetry Log" /> |
+<p align="center">
+  <img src="images/bench_closed_loop_test.jpg" width="85%" alt="Real-Time Hardware Testing with UNI-T Multimeter" />
+</p>
+
+### 4. Arduino Serial Monitor Telemetry Log
+High-speed serial telemetry stream ($115200\text{ baud}$) recording ADC current measurements, target references, and timer compare register adjustments:
+
+<p align="center">
+  <img src="images/serial_monitor.jpg" width="85%" alt="Arduino Serial Monitor Telemetry Log" />
+</p>
 
 ### Experimental Current Step Response Verification
 
@@ -228,11 +248,25 @@ The closed-loop PI current control algorithm was evaluated across four sequentia
 
 ### Multimeter Measurement Gallery
 
-| Reference: 0.30 A ($I_{\text{meas}} = 0.29\text{ A}$) | Reference: 0.40 A ($I_{\text{meas}} = 0.38\text{ A}$) |
-| :---: | :---: |
-| <img src="images/reading_0_3A.png" height="200" alt="Multimeter Reading at 0.3A Reference" /> | <img src="images/reading_0_4A.png" height="200" alt="Multimeter Reading at 0.4A Reference" /> |
-| **Reference: 0.50 A ($I_{\text{meas}} = 0.48\text{ A}$)** | **Reference: 0.60 A ($I_{\text{meas}} = 0.58\text{ A}$)** |
-| <img src="images/reading_0_5A.png" height="200" alt="Multimeter Reading at 0.5A Reference" /> | <img src="images/reading_0_6A.png" height="200" alt="Multimeter Reading at 0.6A Reference" /> |
+#### Reference: 0.30 A ($I_{\text{meas}} = 0.29\text{ A}$)
+<p align="center">
+  <img src="images/reading_0_3A.png" width="60%" alt="Multimeter Reading at 0.3A Reference" />
+</p>
+
+#### Reference: 0.40 A ($I_{\text{meas}} = 0.38\text{ A}$)
+<p align="center">
+  <img src="images/reading_0_4A.png" width="60%" alt="Multimeter Reading at 0.4A Reference" />
+</p>
+
+#### Reference: 0.50 A ($I_{\text{meas}} = 0.48\text{ A}$)
+<p align="center">
+  <img src="images/reading_0_5A.png" width="60%" alt="Multimeter Reading at 0.5A Reference" />
+</p>
+
+#### Reference: 0.60 A ($I_{\text{meas}} = 0.58\text{ A}$)
+<p align="center">
+  <img src="images/reading_0_6A.png" width="60%" alt="Multimeter Reading at 0.6A Reference" />
+</p>
 
 ---
 
