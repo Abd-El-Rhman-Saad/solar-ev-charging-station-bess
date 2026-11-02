@@ -1,5 +1,12 @@
 # 🌐 Full System Integration & Multi-Converter Microgrid Control
 
+> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
+> **Department:** Electrical Power and Machines Engineering  
+> **Core Focus:** Closed-Loop Multi-Converter Microgrid, Energy Management Strategy (EMS), 600V DC-Link Voltage Anchoring & Telemetry Verification
+
+---
+
 This directory contains the closed-loop integrated MATLAB/Simulink system model, hierarchical subsystem schematics, and simulation results for the complete **Solar-Powered EV Charging Station with BESS**. The integrated microgrid coordinates a multi-string Photovoltaic array, an Interleaved Boost Converter with Perturb & Observe (P&O) MPPT, a common regulated 600 V DC bus, a bidirectional Two-Quadrant Chopper interfacing the Battery Energy Storage System (BESS), and a fast-acting Synchronous Buck Converter charging an Electric Vehicle (EV) battery pack.
 
 ---
