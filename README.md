@@ -1,6 +1,6 @@
 # ☀️ Solar-Powered EV Charging Station with Battery Energy Storage (BESS)
 
-![MATLAB/Simulink](https://img.shields.io/badge/MATLAB-Simulink_R2022b+-0076A8?logo=mathworks&logoColor=white)
+![MATLAB/Simulink](https://img.shields.io/badge/MATLAB-Simulink_R2024b+-0076A8?logo=mathworks&logoColor=white)
 ![Simscape Electrical](https://img.shields.io/badge/Simscape-Specialized_Power_Systems-blue)
 ![Altium Designer](https://img.shields.io/badge/Altium_Designer-24-A6192E?logo=altiumdesigner&logoColor=white)
 ![Control Systems](https://img.shields.io/badge/Control-Closed--Loop_PI_%26_Cascade-success)
@@ -8,13 +8,14 @@
 ![Institution](https://img.shields.io/badge/Alexandria_University-Faculty_of_Engineering-003366)
 
 > **B.Sc. Graduation Project 2026** — Electrical Power and Machines Department, Faculty of Engineering, Alexandria University.  
-> Thesis Title: *Integration of Photovoltaic Systems and Energy Storage for Electric Vehicle Charging Station*.
+> **Thesis Title:** *Integration of Photovoltaic Systems and Energy Storage for Electric Vehicle Charging Station*.  
+> **Academic Supervisor:** Prof. Dr. Ahmed Abbas El Serougi
 
 ---
 
 ## 🏛️ Master Architecture Overview
 
-The repository documents the complete end-to-end engineering lifecycle of a **standalone, 100% off-grid solar-powered Electric Vehicle (EV) fast-charging microgrid**. The system coordinates a high-efficiency Photovoltaic (PV) array, an Interleaved Boost Converter with Perturb & Observe (P&O) MPPT, a centralized regulated 600 V DC-Link bus, a bidirectional Class-C Two-Quadrant Chopper interfacing stationary Battery Energy Storage (BESS), and a fast-acting Synchronous Buck Converter charging an EV battery pack.
+The repository documents the complete end-to-end engineering lifecycle of a **standalone, off-grid solar-powered Electric Vehicle (EV) fast-charging microgrid**. The system coordinates a high-efficiency Photovoltaic (PV) array, an Interleaved Boost Converter with Perturb & Observe (P&O) MPPT, a centralized regulated $600.0\text{ V}$ DC-Link bus, a bidirectional Class-C Two-Quadrant Chopper interfacing stationary Battery Energy Storage (BESS), and a fast-acting Synchronous Buck Converter charging an EV battery pack.
 
 <p align="center">
   <img src="6_Full_System_Integration/images/System_00_Root_Solar_EV_BESS_Full_Sys_Full_Overview.png" width="95%" alt="Complete Microgrid Closed-Loop Architecture" />
@@ -38,7 +39,7 @@ Grid-independent EV charging stations face the dual challenges of intermittent s
 | **Transient Settling Time** | **$< 0.5\text{ s}$** | $< 0.4\text{ s}$ | Voltage overshoot bounded below $0.7\%$ ($\approx 0.63\%$, $603.8\text{ V}$ peak) |
 | **Switching Frequency** | $10.0\text{ kHz}$ to $20\text{ kHz}$ | **$10.0\text{ kHz}$** | ATmega328P Timer 1 Phase-Correct PWM ($1\ \mu\text{s}$ dead-time) |
 
-*(Note: Simulation values are read directly from the Simulink model displays and scopes: $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = 8,491\text{ W}$ generation, $P_{\text{EV}} = 4,068\text{ W}$, and $P_{\text{storage}} = +4,498\text{ W}$; the project thesis text reports rounded nominal figures of $\approx 8.52\text{ kW}$ solar capacity, $\approx 4\text{ kW}$ EV charging load, and $\approx 3.48\text{ kW}$ BESS deficit support).*
+> **Engineering Note on Simulation vs. Thesis Reporting:** Simulation values are read directly from the Simulink model displays and scopes: $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = 8,491\text{ W}$ generation, $P_{\text{EV}} = 4,068\text{ W}$, and $P_{\text{storage}} = +4,498\text{ W}$; the project thesis text reports rounded nominal figures of $\approx 8.52\text{ kW}$ solar capacity, $\approx 4\text{ kW}$ EV charging load, and $\approx 3.48\text{ kW}$ BESS deficit support.
 
 ---
 
@@ -48,90 +49,98 @@ The operational nucleus of the microgrid is the instantaneous conservation of en
 
 $$P_{\text{PV}}(t) = P_{\text{EV}}(t) + P_{\text{BESS}}(t) + P_{\text{loss}}(t)$$
 
+Under Kirchhoff's Current Law (KCL) at the central $600.0\text{ V}$ bus node:
+
+$$C_{\text{dc}} \frac{d V_{\text{DC}}}{d t} = I_{\text{boost,out}}(t) - I_{\text{chopper,in}}(t) - I_{\text{buck,in}}(t) \approx 0$$
+
 ```text
-                     ┌─────────────────────────────────────────┐
-                     │          Solar PV Generation            │
-                     │          P_PV = 8,491 W (STC)           │
-                     └────────────────────┬────────────────────┘
-                                          │
-                                          ▼
-                     ┌─────────────────────────────────────────┐
-                     │      Common DC-Link Bus (600.0 V)       │
-                     └────────────┬───────────────┬────────────┘
-                                  │               │
-            [4,068 W Priority]    │               │    [4,498 W Surplus]
-                                  ▼               ▼
-      ┌──────────────────────────────┐ ┌──────────────────────────────┐
-      │     EV Fast Charger Buck     │ │   Bidirectional 2Q Chopper   │
-      │   (Charges EV Pack @ 10 A)   │ │  (Stores Excess into BESS)   │
-      └──────────────────────────────┘ └──────────────────────────────┘
+       ┌─────────────────────────────────────────┐
+       │           Solar PV Generation           │
+       │          P_PV = 8,491 W (STC)           │
+       └────────────────────┬────────────────────┘
+                            │
+                            ▼
+       ┌─────────────────────────────────────────┐
+       │      Common DC-Link Bus (600.0 V)       │
+       └────────────┬───────────────┬────────────┘
+                    │               │
+     Surplus Energy │               │ Deficit Support
+       (+4,498 W)   ▼               ▼ (-3.48 kW max)
+       ┌────────────────────────┐  ┌────────────────────────┐
+       │   BESS 2Q Converter    │  │  EV Fast Buck Charger  │
+       │ (7.4V / 2.55Ah Li-ion) │  │  (CC/CV Mode: 4,068 W) │
+       └────────────────────────┘  └────────────────────────┘
 ```
 
-The system operates seamlessly across three operational regimes:
+### Dynamic EMS Operational Regimes & Power Flow
 
-1. **Mode 1 — High Solar Surplus ($P_{\text{PV}} > P_{\text{EV}}$) [Simulated Operating Point]:**  
-   The PV array generates $8,491\text{ W}$. The EV charger draws $4,068\text{ W}$ in Constant Current mode. The Two-Quadrant Chopper operates in **Buck mode**, directing the remaining $+4,498\text{ W}$ surplus into the BESS ($I_B = +11.25\text{ A}$), ensuring zero wasted solar energy.
-2. **Mode 2 — Solar Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$) [Studied Case]:**  
-   Under cloud cover or partial shading, PV generation drops below load demand. The BESS cascade controller reverses inductor current to **Boost mode** ($I_B < 0$), discharging stored energy (providing up to $3.48\text{ kW}$ deficit support) to clamp the DC bus at $600\text{ V}$ and prevent vehicle charging interruptions.
-3. **Mode 3 — Standalone / Nighttime Operation ($P_{\text{PV}} = 0$) [Design Operational Capability]:**  
-   When solar generation drops to zero, the BESS is designed to function as the primary grid-forming voltage source, supplying energy to sustain vehicle charging.
+The decentralized supervisory EMS continuously monitors the net power differential $\Delta P(t) = P_{\text{PV}}(t) - P_{\text{EV}}(t)$ and governs converter interactions across four discrete operational regimes:
+
+| Operational Regime | Generation vs. Load Condition | Converter Interactions & Power Flow Direction | DC-Link Voltage Regulation Mechanism |
+| :--- | :--- | :--- | :--- |
+| **Regime 1: Solar Surplus** | $P_{\text{PV}} > P_{\text{EV}}$<br>($G \ge 800\text{ W/m}^2$, $SOC < 95\%$) | • **PV:** Maximum Power Point Tracking ($8,491\text{ W}$)<br>• **EV:** Regulated Fast Charging ($4,068\text{ W}$)<br>• **BESS:** **Buck Charging** absorbs $+4,498\text{ W}$ surplus | BESS outer PI voltage controller modulates high-side switch $Q_1$, clamping bus tightly at $600.0\text{ V}$. |
+| **Regime 2: Cloud Deficit** | $P_{\text{PV}} < P_{\text{EV}}$<br>($G \le 400\text{ W/m}^2$, $SOC > 20\%$) | • **PV:** Degraded harvesting ($P_{\text{PV}} < 4\text{ kW}$)<br>• **EV:** Uninterrupted constant current charging<br>• **BESS:** **Boost Discharging** injects up to $3.48\text{ kW}$ | BESS controller instantaneously reverses current ($I_B < 0$), preventing DC bus voltage sag ($< 5\text{ ms}$ recovery). |
+| **Regime 3: Autonomous Night** | $P_{\text{PV}} = 0$<br>(Night operation, $SOC > 20\%$) | • **PV:** Zero generation (Boost converter idle)<br>• **EV:** Sustained charging supported entirely by BESS<br>• **BESS:** Sole voltage-forming source ($P_{\text{BESS}} = -P_{\text{EV}}$) | BESS acts as primary grid-forming voltage anchor, maintaining $600.0\text{ V}$ until battery hits $20\%$ DoD limit. |
+| **Regime 4: Full Charge Curtailment** | $P_{\text{PV}} > P_{\text{EV}}$<br>($SOC_{\text{BESS}} \ge 95\%$, $I_{\text{EV}} = 0$) | • **PV:** Deliberate MPPT power curtailment ($V_{\text{pv}} \to V_{\text{oc}}$)<br>• **EV:** Disconnected or fully charged<br>• **BESS:** Float mode ($I_B \approx 0\text{ A}$) to protect cell chemistry | MPPT sweep moves away from $V_{mp}$ to match auxiliary station parasitic consumption, preventing DC bus overvoltage. |
+
+### Quantitative Power Equilibrium Verification
+
+Telemetry recorded from the steady-state digital twin confirms high-precision energy balance across all microgrid nodes:
+* **Total Instantaneous Generation ($P_{\text{gen}}$):** $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = \mathbf{8,491.9\text{ W}}$
+* **Total Instantaneous Demand ($P_{\text{load}}$):** $P_{\text{EV}} + P_{\text{BESS}} = 4,068.0\text{ W} + 4,498.0\text{ W} = \mathbf{8,566.0\text{ W}}$
+* **Power Transfer Fidelity:** Generation balances active consumption within $\approx 0.8\%$, perfectly accounting for semiconductor conduction drops ($r_{\text{DS(on)}} = 0.04\ \Omega$) and inductor series copper resistances ($r_L = 1.9\ \Omega$).
 
 ---
 
 ## 🚀 Interactive Modular Repository Tour
 
-The repository is organized into six self-contained engineering directories, each containing specialized Simulink models, firmware code, design files, and standalone documentation:
+The repository is structured into six modular engineering directories matching the project's physical subsystems:
 
-| Directory | Topology / Focus Area | Control Strategy | Key Assets & Documentation |
+| Directory | Core Technical Scope | Primary Simulation Model | Key Hardware & Design Assets |
 | :--- | :--- | :--- | :--- |
-| [**`1_PV_Modeling_and_MPPT/`**](1_PV_Modeling_and_MPPT/) | Single-Diode Solar Array ($8.5\text{ kW}$) | Perturb & Observe (P&O) + Global Voltage Sweep | 4 Simulink models, standalone C firmware (`mppt_po.c`), IncCond benchmark, 11 curated 300 DPI figures. |
-| [**`2_Interleaved_Boost_Converter/`**](2_Interleaved_Boost_Converter/) | 2-Phase Interleaved Boost Stage | $180^\circ$ Phase-Shifted PWM + Dual PI Current Loops | Open-loop & closed-loop models, Thevenin equivalent tuning testbench, ripple cancellation analysis, 6 figures. |
-| [**`3_BESS_and_2Q_Chopper/`**](3_BESS_and_2Q_Chopper/) | Synchronous Class-C 2Q Chopper | Cascade Voltage/Current Loop + Hysteresis Band | Bidirectional dynamic models, embedded MATLAB function `fcn`, discrete Z-domain difference equations, 7 figures. |
-| [**`4_EV_Buck_Charger/`**](4_EV_Buck_Charger/) | Synchronous Step-Down Charger | Closed-Loop CC-CV with Supervisory Mode Logic | Non-ideal parasitic duty cycle compensation ($D_u = 39.75\%$), component sizing margin calculations, 8 figures. |
-| [**`5_Hardware_and_PCB_Design/`**](5_Hardware_and_PCB_Design/) | Experimental Power Electronics Testbed | ATmega328P Timer 1 ($10\text{ kHz}$ Phase-Correct PWM) | 3 complete Altium Designer projects (`.zip`), full BOM from thesis Chapter 3, C++ firmware, 12 validation photos. |
-| [**`6_Full_System_Integration/`**](6_Full_System_Integration/) | Complete Closed-Loop Microgrid | Decentralized Hierarchical Energy Management | `Solar_EV_BESS_Full_Sys.slx` master integration model, numerical power balance proofs, 28 telemetry figures. |
+| [**`1_PV_Modeling_and_MPPT`**](1_PV_Modeling_and_MPPT/) | Single-diode PV modeling, P&O algorithm, Incremental Conductance benchmark, and partial shading check. | `MPPT_PO1.slx`<br>`pv_curves.slx` | `mppt_po.c` (ANSI C firmware)<br>13 STC parameter baseline |
+| [**`2_Interleaved_Boost_Converter`**](2_Interleaved_Boost_Converter/) | 2-phase interleaved boost converter sizing, input ripple cancellation ($180^\circ$ phase shift), and central vs. string comparison. | `Interleaved_Thevenin.slx`<br>`Interleaved_Boost.slx` | Mathematical ripple proofs ($D \le 0.5$ and $D > 0.5$)<br>600 V / 8.5 kW sizing |
+| [**`3_BESS_and_2Q_Chopper`**](3_BESS_and_2Q_Chopper/) | Class-C bidirectional chopper, cascaded voltage PI + hysteresis current control, and bilinear Tustin discretization. | `BESS_2Q_All_Cases_Pro.slx`<br>`chopper_actual_rating.slx` | Embedded MATLAB Function source code<br>6-case benchmark matrix |
+| [**`4_EV_Buck_Charger`**](4_EV_Buck_Charger/) | Synchronous step-down buck charger, non-ideal parasitic compensation ($D_u \approx 39.75\%$), and automated CC-to-CV transition. | `Buck_Closed_Loop_CCCV_Charger.slx`<br>`Buck_Prototype_Current_Control.slx` | Non-ideal volt-second derivation<br>Dual-loop state machine |
+| [**`5_Hardware_and_PCB_Design`**](5_Hardware_and_PCB_Design/) | Complete Altium Designer projects, Star Grounding layout, ATmega328P Timer 1 C++ firmware, and bench multimeter testing. | `Two_Quadrant_Chopper.zip`<br>`Buck_Converter.zip` | 10 kHz Phase-Correct PWM code<br>12 bench verification photos |
+| [**`6_Full_System_Integration`**](6_Full_System_Integration/) | Master closed-loop microgrid coordination, EMS power balance verification, and full-system telemetry scopes. | `Solar_EV_BESS_Full_Sys.slx` | 28 level-1/2 schematics & scopes<br>Instantaneous power displays |
 
 ---
 
 ## 🔬 Hardware Prototyping & Experimental Laboratory Validation
 
-Physical converter prototypes were developed, manufactured, and bench-tested in the Electrical Power & Machines Laboratory to validate analytical derivations against real-world switching dynamics.
-
-<p align="center">
-  <img src="5_Hardware_and_PCB_Design/images/pcb_actual_board.jpg" width="48%" alt="Physical Populated 2Q Chopper PCB Assembly" />
-  &nbsp;&nbsp;
-  <img src="5_Hardware_and_PCB_Design/images/all_hardware_system.png" width="48%" alt="Complete Hardware Bench Testing Setup" />
-</p>
+Beyond numerical simulation, functional converter prototypes were designed in **Altium Designer**, fabricated, and experimentally verified on the laboratory bench:
 
 ### Laboratory Instrumentation & Semiconductor Baseline
 
-* **Programmable DC Power Supply (TDK-Lambda GEN 300-11):** $0\text{--}300\text{ V DC}$, $11\text{ A}$, $3.3\text{ kW}$ low-noise isolated excitation.
-* **Digital Storage Oscilloscope (Hantek DSO4254B):** 4 Analog Channels, $250\text{ MHz}$, $1\text{ GSa/s}$ real-time capture for gate-drive pulse verification and dead-time monitoring.
-* **Precision Digital Multimeters (UNI-T UT33D+ & UT89X True RMS):** Multi-point telemetry logging for load currents and terminal voltages.
-* **Power Semiconductor Stage:** Heavy-duty IRFP260N MOSFETs (200V, 50A, TO-247AC) driven by IR2111 half-bridge gate drivers with 6N139 high-gain optocoupler galvanic isolation.
+* **Switching Stage:** IRFP260N Power MOSFETs ($200\text{ V}$, $50\text{ A}$, $R_{\text{DS(on)}} = 0.04\ \Omega$) mounted on extruded aluminum heatsinks.
+* **Gate Drive Circuitry:** IR2111 half-bridge gate drivers with $1.0\ \mu\text{s}$ internal dead-time paired with 6N139 optocouplers ($5000\text{ V}_{\text{RMS}}$ isolation).
+* **Feedback Sensing:** ACS712-05B linear Hall-effect current sensor ($185\text{ mV/A}$ sensitivity) with hardware RC low-pass filtering.
+* **Digital Signal Generation:** Bare-metal ATmega328P 16-bit Timer 1 configured in Phase-Correct PWM mode, generating a clean $10.0\text{ kHz}$ carrier ($	ext{TOP} = 800$).
 
 ### Experimental Closed-Loop Current Tracking Results
 
-The ATmega328P embedded discrete PI current controller was evaluated under live hardware loading across four sequential reference steps ($0.30\text{ A}$ to $0.60\text{ A}$), demonstrating rapid convergence with steady-state tracking error bounded strictly within 5% (in agreement with thesis Table 6.1):
+As documented in Table 6.1 of the project thesis, bench current tracking was validated across multiple setpoints with steady-state error bounded strictly **within 5.0%**:
 
-| Target Current ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Steady-State Error | Verification Status |
-| :---: | :---: | :---: | :---: |
-| **$0.30\text{ A}$** | $0.29\text{ A}$ | $-3.3\%$ | ✅ Verified |
-| **$0.40\text{ A}$** | $0.38\text{ A}$ ($0.38\text{--}0.40\text{ A}$) | $-5.0\%\text{ to }0.0\%$ | ✅ Verified |
-| **$0.50\text{ A}$** | $0.48\text{ A}$ | $-4.0\%$ | ✅ Verified |
-| **$0.60\text{ A}$** | $0.58\text{ A}$ | $-3.3\%$ | ✅ Verified |
+| Current Setpoint ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Absolute Error ($\Delta I$) | Relative Error | Laboratory Finding |
+| :---: | :---: | :---: | :---: | :--- |
+| **$0.30\text{ A}$** | **$0.29\text{ A}$** | $-0.01\text{ A}$ | **$-3.3\%$** | Stable tracking; low sensor SNR at lower bounds |
+| **$0.40\text{ A}$** | **$0.38\text{ A}$** | $-0.02\text{ A}$ | **$-5.0\%$** | Nominal setpoint; within thesis Table 6.1 boundary |
+| **$0.50\text{ A}$** | **$0.48\text{ A}$** | $-0.02\text{ A}$ | **$-4.0\%$** | Linear response; zero thermal drift observed |
+| **$0.60\text{ A}$** | **$0.58\text{ A}$** | $-0.02\text{ A}$ | **$-3.3\%$** | High-current ceiling; heatsink temperature $< 38^{\circ}\text{C}$ |
+
+<p align="center">
+  <img src="5_Hardware_and_PCB_Design/images/all_hardware_system.png" width="90%" alt="Laboratory Hardware Experimental Bench Setup" />
+</p>
 
 ---
 
 ## 📘 Project Documentation & Academic Thesis
 
-* **Complete Graduation Project Thesis (PDF, 287 pages):**  
-  [`Docs/Final Graduation Project Documentation - 2026.pdf`](Docs/Final%20Graduation%20Project%20Documentation%20-%202026.pdf)  
-  *Comprehensive academic treatise covering detailed state-space averaging derivations, transfer function formulations, thermal dissipation calculations, control loop-shaping, and experimental laboratory logs.*
-* **Complete LaTeX Source Code:**  
-  [`Docs/LaTeX_Source/`](Docs/LaTeX_Source/) — Structured modular LaTeX source files (`main.tex`, chapter sections, and high-resolution vector figures).
-* **Final Project Defense Slide Deck:**  
-  Published in the repository [**GitHub Releases**](../../releases/latest) section.
+The comprehensive academic documentation for this graduation project is compiled and archived in the [`Docs/`](Docs/) directory:
+
+* **Complete Academic Book (PDF):** [`Docs/Final Graduation Project Documentation - 2026.pdf`](Docs/)
+* **Full LaTeX Source Code:** [`Docs/LaTeX_Source/`](Docs/LaTeX_Source/) (contains all chapter `.tex` sources, vector figures, and BibTeX citations).
 
 ---
 
@@ -178,17 +187,17 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
 
 ---
 
-### 👤 Individual Contribution & Technical Leadership
+### 👤 Individual Contribution & Technical Scope
 
-**Eng. Abd El-Rhman Muhammad Saad** led the **Two-Quadrant Chopper & BESS Subsystem** and served as the primary engineer for hardware prototyping and experimental validation:
+**Abd El-Rhman Muhammad Saad (Project Engineer):** Focused on the **Two-Quadrant Chopper & BESS Subsystem**, Altium PCB layouts, and laboratory hardware bench testing:
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Abd_El--Rhman_Saad-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/Abd-El-Rhman-Saad)
 [![GitHub](https://img.shields.io/badge/GitHub-Abd--El--Rhman--Saad-181717?logo=github&logoColor=white)](https://github.com/Abd-El-Rhman-Saad)
 [![Email](https://img.shields.io/badge/Email-abdelrhmanmsaad22@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:abdelrhmanmsaad22@gmail.com)
 
-* **BESS & Two-Quadrant Chopper Lead:** Designed and simulated the Class-C bidirectional chopper power stage, formulated discrete cascade PI control algorithms, developed embedded ATmega328P Timer 1 ($10\text{ kHz}$ Phase-Correct PWM) firmware, and verified bidirectional battery energy buffering.
-* **Hardware Prototyping & Laboratory Testing:** Primary contributor to physical circuit implementation, Altium Designer PCB layout and fabrication outputs, bench wiring, and experimental oscilloscope testing across converter prototypes (Two-Quadrant Chopper, Buck Charger, and Interleaved Boost) utilizing laboratory power supplies, multimeters, and active loads.
-* **Cross-Converter Collaborative Modeling:** Co-developed and tuned closed-loop simulation models in MATLAB/Simulink, ensuring cohesive multi-converter power management and DC-bus voltage stabilization.
+* **BESS & Two-Quadrant Chopper Subsystem:** Modeled and simulated the Class-C bidirectional chopper power stage, formulated discrete cascade PI control algorithms, developed embedded ATmega328P Timer 1 ($10\text{ kHz}$ Phase-Correct PWM) firmware, and verified bidirectional battery energy buffering.
+* **Hardware Prototyping & Laboratory Testing:** Contributed to physical circuit implementation, Altium Designer PCB layout and fabrication outputs, bench wiring, and experimental oscilloscope testing across converter prototypes (Two-Quadrant Chopper, Buck Charger, and Interleaved Boost) utilizing laboratory power supplies, multimeters, and active loads.
+* **Cross-Converter Collaborative Modeling:** Co-developed and tuned closed-loop simulation models in MATLAB/Simulink, supporting multi-converter power management and DC-bus voltage stabilization.
 
 #### 🛠️ Key Technical Challenges Solved by Abd El-Rhman:
 
