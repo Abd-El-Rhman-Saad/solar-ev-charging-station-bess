@@ -15,10 +15,14 @@ To ensure the charging station delivers sufficient energy without overloading th
 * **Target Daily Energy Delivery:** $E_{\text{daily}} = 42.5\text{ kWh/day}$
 * **Average Peak Sun Hours (Alexandria, Egypt):** $T_{\text{peak}} \approx 5\text{ hours}$
 * **Required PV Array Nominal Power:**
-  $$P_{\text{PV}} = \frac{E_{\text{daily}}}{T_{\text{peak}}} = \frac{42.5\text{ kWh}}{5\text{ h}} = 8500\text{ W} \quad (\mathbf{8.5\text{ kW}})$$
+
+$$P_{\text{PV}} = \frac{E_{\text{daily}}}{T_{\text{peak}}} = \frac{42.5\text{ kWh}}{5\text{ h}} = 8500\text{ W} \quad (\mathbf{8.5\text{ kW}})$$
+
 * **Module Selection:** High-efficiency monocrystalline modules ($P_{\text{module}} = 710\text{ W}$, $V_m = 40.9\text{ V}$, $I_m = 17.36\text{ A}$).
 * **Total Module Count:**
-  $$N_{\text{modules}} = \frac{8500\text{ W}}{710\text{ W}} \approx 12\text{ Modules}$$
+
+$$N_{\text{modules}} = \frac{8500\text{ W}}{710\text{ W}} \approx 12\text{ Modules}$$
+
 * **Array Configuration:** 2 parallel strings of 6 series modules ($N_s = 6, N_p = 2$).
 * **Nominal Array Voltage:** $V_{\text{in}} = 6 \times 40.9\text{ V} \approx 245.4\text{ V}$
 
@@ -61,9 +65,20 @@ $$\Delta I_{\text{in}} = \frac{V_{\text{DC}}}{L \cdot f_{\text{sw}}} \cdot (2D -
 
 1. **Zero Theoretical Ripple at $D = 0.5$:** At a 50% duty cycle, the rising slope of $i_{L1}$ perfectly cancels the falling slope of $i_{L2}$, driving net input ripple to zero ($\Delta I_{\text{in}} = 0$).
 2. **$\approx 66.7\%$ Ripple Reduction at Nominal Duty ($D \approx 0.60$):**
-   $$\frac{\Delta I_{\text{in}}}{\Delta I_L} = \frac{2D - 1}{D} = \frac{2(0.591) - 1}{0.591} \approx 0.308$$
-   The input ripple drawn from the PV array is reduced by nearly **$70\%$** compared to a single-phase converter.
+
+$$\frac{\Delta I_{\text{in}}}{\Delta I_L} = \frac{2D - 1}{D} = \frac{2(0.591) - 1}{0.591} \approx 0.308$$
+
+The input ripple drawn from the PV array is reduced by nearly **70%** compared to a single-phase converter.
 3. **Capacitor Longevity & Thermal Relief:** Lower high-frequency ripple drastically suppresses resistive heating ($I_{\text{rms}}^2 \cdot \text{ESR}$) in input filter capacitors, directly extending component operating life.
+
+---
+
+## 🏛️ Architectural Comparison: Central vs. String Topologies
+
+Our research explored two primary distribution strategies for deploying the interleaved converter stage across the charging infrastructure:
+
+* **Centralized Interleaved Topology:** Connects all 12 modules (2 parallel strings of 6 series modules) to a single high-capacity multi-phase converter. Minimizes BOM component count, reduces control hardware complexity, and optimizes peak conversion efficiency under uniform sunlight conditions.
+* **String Interleaved Topology:** Employs modular converters dedicated to individual solar strings. Provides superior energy yield under non-uniform partial shading and independent MPPT granularity, but requires additional sensing hardware and gate drivers.
 
 ---
 
@@ -77,7 +92,7 @@ The repository documents the complete chronological progression of the converter
 | **`Interleaved_Boost_Source_Open_Loop.slx`** | 2-Phase Interleaved Boost | Open-Loop ($180^\circ$ shift) | Dynamic validation of current sharing and input ripple cancellation |
 | **`Boost_Thevenin_Equivalent.slx`** | Single-Phase with Thevenin Source | Open-Loop | Decoupling converter dynamics from non-linear PV curve for control analysis |
 | **`Interleaved_Boost_Thevenin_Equivalent.slx`** | 2-Phase Interleaved Thevenin | Open-Loop | Multi-phase plant model formulation for linear control design |
-| **`Interleaved_Boost_Thevenin_Full_Control_ForDesign.slx`** | Full Closed-Loop Interleaved | Dual-Loop PI (Voltage + Dual Current) | Final control architecture: 600 V bus regulation and active 50/50 current sharing |
+| **`Interleaved_Boost_Thevenin_Full_Control_ForDesign.slx`** | Full Closed-Loop Interleaved | Dual-Loop PI (Voltage + Dual Current) | Final control architecture: 600 V bus regulation and active 50% / 50% current sharing |
 
 ---
 
