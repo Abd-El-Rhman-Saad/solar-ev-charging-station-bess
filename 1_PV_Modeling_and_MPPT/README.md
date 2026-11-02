@@ -243,8 +243,8 @@ The supervisory controller executes a deterministic sequential sweep when a powe
   <img src="images/global_mppt_state_machine_300dpi.png" width="85%" alt="Global Forced Sweep State Machine Subsystem" />
 </p>
 
-1. **State 1 — Periodic Trigger:** A supervisory timer periodically interrupts standard operation or triggers upon detecting a persistent $\Delta P < -15\%$ drop.
-2. **State 2 — Controlled Voltage Sweep:** The controller overrides the duty cycle, sweeping array terminal voltage from $300\text{ V}$ down to $240\text{ V}$ ($V_{\text{scan\_min}}$).
+1. **State 1 — Periodic Trigger:** A supervisory timer periodically interrupts standard operation or triggers upon detecting a persistent power drop exceeding 15% ($\Delta P < -0.15 \cdot P_{\text{prev}}$).
+2. **State 2 — Controlled Voltage Sweep:** The controller overrides the duty cycle, sweeping array terminal voltage from $300\text{ V}$ down to $240\text{ V}$ ($V_{\text{scan,min}}$).
 3. **State 3 — Global Coordinate Memorization:** Instantaneous power is sampled across the sweep window, continuously updating registers with the coordinates of the true Global Maximum Power Point ($V_{\text{best}}, P_{\text{best}}$).
 4. **State 4 — Target Lock & P&O Handover:** The controller locks duty cycle directly to $V_{\text{best}}$, extracting the true global peak ($5,202\text{ W}$) and restoring fine P&O perturbations around the global summit.
 
