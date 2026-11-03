@@ -35,11 +35,11 @@ Grid-independent EV charging stations face the dual challenges of intermittent s
 | **Solar PV Generation** | **$\approx 8.5\text{ kW}$** ($8,491\text{ W}$ Scope / $\approx 8.52\text{ kW}$ Thesis) | 12V / 10W Emulated Source | P&O MPPT tracking knee of P-V curve at $V_{mp} = 243.6\text{ V}$ |
 | **Interleaved Boost Stage** | Dual-Phase, $180^\circ$ Phase Shift | Dual $2.0\text{ mH}$ Power Chokes | $49.1\% / 50.9\%$ current sharing; cancels $20\text{ kHz}$ input current ripple |
 | **BESS Energy Buffer** | **$3.48\text{ kW}$** Deficit / $+4.50\text{ kW}$ Surplus | $7.4\text{ V}$ ($2.55\text{ Ah}$) 2S Li-ion | Synchronous bidirectional power flow (Buck charge / Boost discharge) |
-| **EV Charging Power** | **$50\text{ kW}$** Sizing / $4.07\text{ kW}$ Fast Track | $3.7\text{ V} / 0.74\text{ A}$ Prototype | Dual-loop CC-CV mode transition with bumpless transfer |
+| **EV Charging Power** | **$50\text{ kW}$** Utility Sizing / **$4.07\text{ kW}$** Fast Track (Surplus) / **$12.0\text{ kW}$** Deficit ($3.48\text{ kW}$ BESS support) | $3.7\text{ V} / 0.74\text{ A}$ Prototype | Dual-loop CC-CV mode transition with bumpless transfer |
 | **Transient Settling Time** | **$< 0.5\text{ s}$** | $< 0.4\text{ s}$ | Voltage overshoot bounded below $0.7\%$ ($\approx 0.63\%$, $603.8\text{ V}$ peak) |
 | **Switching Frequency** | $10.0\text{ kHz}$ to $20\text{ kHz}$ | **$10.0\text{ kHz}$** | ATmega328P Timer 1 Phase-Correct PWM ($1\ \mu\text{s}$ dead-time) |
 
-> **Engineering Note on Simulation vs. Thesis Reporting:** Simulation values are read directly from the Simulink model displays and scopes: $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = 8,491\text{ W}$ generation, $P_{\text{EV}} = 4,068\text{ W}$, and $P_{\text{storage}} = +4,498\text{ W}$; the project thesis text reports rounded nominal figures of $\approx 8.52\text{ kW}$ solar capacity, $\approx 4\text{ kW}$ EV charging load, and $\approx 3.48\text{ kW}$ BESS deficit support.
+> **Engineering Note on Simulation vs. Thesis Reporting:** Simulation values are read directly from the full microgrid model scopes: $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = 8,491.9\text{ W}$ generation, $P_{\text{EV}} = 4,068.0\text{ W}$, and $P_{\text{storage}} = +4,498.0\text{ W}$ (surplus charging). In the deficit regime, EV charging draws $12.0\text{ kW}$ with $3.48\text{ kW}$ injected by the BESS. The $50\text{ kW}$ rating represents the utility-scale open-loop fast-charger design stage in Module 4. The project thesis text reports rounded nominal figures of $\approx 8.52\text{ kW}$ solar capacity, $\approx 4\text{ kW}$ EV charging load, and $\approx 3.48\text{ kW}$ BESS deficit support.
 
 ---
 
@@ -72,23 +72,23 @@ $$C_{\text{dc}} \frac{d V_{\text{DC}}}{d t} = I_{\text{boost,out}}(t) - I_{\text
        └────────────────────────┘  └────────────────────────┘
 ```
 
-### Dynamic EMS Operational Regimes & Power Flow
+### Dynamic EMS Operational Regimes & Power Flow (Operational Concept / Design Intent)
 
-The decentralized supervisory EMS continuously monitors the net power differential $\Delta P(t) = P_{\text{PV}}(t) - P_{\text{EV}}(t)$ and governs converter interactions across four discrete operational regimes:
+The supervisory EMS architecture governs power balance across four conceptual operating regimes (thresholds illustrative; primary solar surplus and deficit modes validated in closed-loop simulation):
 
 | Operational Regime | Generation vs. Load Condition | Converter Interactions & Power Flow Direction | DC-Link Voltage Regulation Mechanism |
 | :--- | :--- | :--- | :--- |
 | **Regime 1: Solar Surplus** | $P_{\text{PV}} > P_{\text{EV}}$<br>($G \ge 800\text{ W/m}^2$, $SOC < 95\%$) | • **PV:** Maximum Power Point Tracking ($8,491\text{ W}$)<br>• **EV:** Regulated Fast Charging ($4,068\text{ W}$)<br>• **BESS:** **Buck Charging** absorbs $+4,498\text{ W}$ surplus | BESS outer PI voltage controller modulates high-side switch $Q_1$, clamping bus tightly at $600.0\text{ V}$. |
-| **Regime 2: Cloud Deficit** | $P_{\text{PV}} < P_{\text{EV}}$<br>($G \le 400\text{ W/m}^2$, $SOC > 20\%$) | • **PV:** Degraded harvesting ($P_{\text{PV}} < 4\text{ kW}$)<br>• **EV:** Uninterrupted constant current charging<br>• **BESS:** **Boost Discharging** injects up to $3.48\text{ kW}$ | BESS controller instantaneously reverses current ($I_B < 0$), preventing DC bus voltage sag ($< 5\text{ ms}$ recovery). |
+| **Regime 2: Cloud Deficit** | $P_{\text{PV}} < P_{\text{EV}}$<br>($G \le 400\text{ W/m}^2$, $SOC > 20\%$) | • **PV:** Degraded harvesting ($P_{\text{PV}} < 4\text{ kW}$)<br>• **EV:** Uninterrupted constant current charging<br>• **BESS:** **Boost Discharging** injects up to $3.48\text{ kW}$ | BESS controller rapidly reverses current flow ($I_B < 0$), preventing DC bus voltage sag through bidirectional buffering. |
 | **Regime 3: Autonomous Night** | $P_{\text{PV}} = 0$<br>(Night operation, $SOC > 20\%$) | • **PV:** Zero generation (Boost converter idle)<br>• **EV:** Sustained charging supported entirely by BESS<br>• **BESS:** Sole voltage-forming source ($P_{\text{BESS}} = -P_{\text{EV}}$) | BESS acts as primary grid-forming voltage anchor, maintaining $600.0\text{ V}$ until battery hits $20\%$ DoD limit. |
 | **Regime 4: Full Charge Curtailment** | $P_{\text{PV}} > P_{\text{EV}}$<br>($SOC_{\text{BESS}} \ge 95\%$, $I_{\text{EV}} = 0$) | • **PV:** Deliberate MPPT power curtailment ($V_{\text{pv}} \to V_{\text{oc}}$)<br>• **EV:** Disconnected or fully charged<br>• **BESS:** Float mode ($I_B \approx 0\text{ A}$) to protect cell chemistry | MPPT sweep moves away from $V_{mp}$ to match auxiliary station parasitic consumption, preventing DC bus overvoltage. |
 
 ### Quantitative Power Equilibrium Verification
 
-Telemetry recorded from the steady-state digital twin confirms high-precision energy balance across all microgrid nodes:
+Telemetry recorded from the steady-state digital twin confirms energy balance across all microgrid nodes:
 * **Total Instantaneous Generation ($P_{\text{gen}}$):** $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = \mathbf{8,491.9\text{ W}}$
 * **Total Instantaneous Demand ($P_{\text{load}}$):** $P_{\text{EV}} + P_{\text{BESS}} = 4,068.0\text{ W} + 4,498.0\text{ W} = \mathbf{8,566.0\text{ W}}$
-* **Power Transfer Fidelity:** Generation balances active consumption within $\approx 0.8\%$, perfectly accounting for semiconductor conduction drops ($r_{\text{DS(on)}} = 0.04\ \Omega$) and inductor series copper resistances ($r_L = 1.9\ \Omega$).
+* **Power Balance (Single Scope Snapshot):** $P_{\text{gen}} = 8{,}491.9\text{ W}$ vs $P_{\text{EV}} + P_{\text{BESS}} = 8{,}566.0\text{ W}$; the $\approx 0.9\%$ residual reflects the discrete sampling instant at which scopes were captured before full dynamic bus settling, rather than unmodeled converter losses. The graduation thesis reports the rounded steady-state nominal balance: $\approx 8.52\text{ kW} \approx 4.0\text{ kW}\text{ (EV)} + 4.52\text{ kW}\text{ (BESS)}$.**
 
 ---
 
@@ -99,7 +99,7 @@ The repository is structured into six modular engineering directories matching t
 | Directory | Core Technical Scope | Primary Simulation Model | Key Hardware & Design Assets |
 | :--- | :--- | :--- | :--- |
 | [**`1_PV_Modeling_and_MPPT`**](1_PV_Modeling_and_MPPT/) | Single-diode PV modeling, P&O algorithm, Incremental Conductance benchmark, and partial shading check. | `MPPT_PO1.slx`<br>`pv_curves.slx` | `mppt_po.c` (ANSI C firmware)<br>13 STC parameter baseline |
-| [**`2_Interleaved_Boost_Converter`**](2_Interleaved_Boost_Converter/) | 2-phase interleaved boost converter sizing, input ripple cancellation ($180^\circ$ phase shift), and central vs. string comparison. | `Interleaved_Thevenin.slx`<br>`Interleaved_Boost.slx` | Mathematical ripple proofs ($D \le 0.5$ and $D > 0.5$)<br>600 V / 8.5 kW sizing |
+| [**`2_Interleaved_Boost_Converter`**](2_Interleaved_Boost_Converter/) | 2-phase interleaved boost converter sizing, input ripple cancellation ($180^\circ$ phase shift), and central vs. string comparison. | `Interleaved_Boost_Thevenin_Equivalent.slx`<br>`Interleaved_Boost_Thevenin_Full_Control_ForDesign.slx`<br>`Interleaved_Boost_Source_Open_Loop.slx` | Mathematical ripple proofs ($D \le 0.5$ and $D > 0.5$)<br>600 V / 8.5 kW sizing |
 | [**`3_BESS_and_2Q_Chopper`**](3_BESS_and_2Q_Chopper/) | Class-C bidirectional chopper, cascaded voltage PI + hysteresis current control, and bilinear Tustin discretization. | `BESS_2Q_All_Cases_Pro.slx`<br>`chopper_actual_rating.slx` | Embedded MATLAB Function source code<br>6-case benchmark matrix |
 | [**`4_EV_Buck_Charger`**](4_EV_Buck_Charger/) | Synchronous step-down buck charger, non-ideal parasitic compensation ($D_u \approx 39.75\%$), and automated CC-to-CV transition. | `Buck_Closed_Loop_CCCV_Charger.slx`<br>`Buck_Prototype_Current_Control.slx` | Non-ideal volt-second derivation<br>Dual-loop state machine |
 | [**`5_Hardware_and_PCB_Design`**](5_Hardware_and_PCB_Design/) | Complete Altium Designer projects, Star Grounding layout, ATmega328P Timer 1 C++ firmware, and bench multimeter testing. | `Two_Quadrant_Chopper.zip`<br>`Buck_Converter.zip` | 10 kHz Phase-Correct PWM code<br>12 bench verification photos |
@@ -120,14 +120,15 @@ Beyond numerical simulation, functional converter prototypes were designed in **
 
 ### Experimental Closed-Loop Current Tracking Results
 
-As documented in Table 6.1 of the project thesis, bench current tracking was validated across multiple setpoints with steady-state error bounded strictly **within 5.0%**:
+Bench current tracking combines thesis Table 6.1 ($0.20\text{ A}$, $0.30\text{ A}$, and $0.40\text{ A}$ nominal baseline) with extended laboratory multimeter photos in [`5_Hardware_and_PCB_Design/images/`](5_Hardware_and_PCB_Design/images/) ($0.30\text{ A}$, $0.40\text{ A}$, $0.50\text{ A}$, and $0.60\text{ A}$). The $0.40\text{ A}$ photo reads $0.38\text{ A}$, bounding the worst-case error across all measured setpoints at $-5.0\%$:
 
-| Current Setpoint ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Absolute Error ($\Delta I$) | Relative Error | Laboratory Finding |
+| Current Setpoint ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Absolute Error ($\Delta I$) | Relative Error | Source / Verification Reference |
 | :---: | :---: | :---: | :---: | :--- |
-| **$0.30\text{ A}$** | **$0.29\text{ A}$** | $-0.01\text{ A}$ | **$-3.3\%$** | Stable tracking; low sensor SNR at lower bounds |
-| **$0.40\text{ A}$** | **$0.38\text{ A}$** | $-0.02\text{ A}$ | **$-5.0\%$** | Nominal setpoint; within thesis Table 6.1 boundary |
-| **$0.50\text{ A}$** | **$0.48\text{ A}$** | $-0.02\text{ A}$ | **$-4.0\%$** | Linear response; zero thermal drift observed |
-| **$0.60\text{ A}$** | **$0.58\text{ A}$** | $-0.02\text{ A}$ | **$-3.3\%$** | High-current ceiling; heatsink temperature $< 38^{\circ}\text{C}$ |
+| **$0.20\text{ A}$** | **$0.19\text{ A}$** | $-0.01\text{ A}$ | **$-5.0\%$** | Thesis Table 6.1 baseline |
+| **$0.30\text{ A}$** | **$0.29\text{ A}$** | $-0.01\text{ A}$ | **$-3.3\%$** | Thesis Table 6.1 & bench photo (`reading_0_3A.png`) |
+| **$0.40\text{ A}$** | **$0.38\text{ A}$** | $-0.02\text{ A}$ | **$-5.0\%$** | Bench photo (`reading_0_4A.png`); nominal setpoint |
+| **$0.50\text{ A}$** | **$0.48\text{ A}$** | $-0.02\text{ A}$ | **$-4.0\%$** | Bench photo (`reading_0_5A.png`) |
+| **$0.60\text{ A}$** | **$0.58\text{ A}$** | $-0.02\text{ A}$ | **$-3.3\%$** | Bench photo (`reading_0_6A.png`) |
 
 <p align="center">
   <img src="5_Hardware_and_PCB_Design/images/all_hardware_system.png" width="90%" alt="Laboratory Hardware Experimental Bench Setup" />
@@ -139,7 +140,7 @@ As documented in Table 6.1 of the project thesis, bench current tracking was val
 
 The comprehensive academic documentation for this graduation project is compiled and archived in the [`Docs/`](Docs/) directory:
 
-* **Complete Academic Book (PDF):** [`Docs/Final Graduation Project Documentation - 2026.pdf`](Docs/)
+* **Complete Academic Book (PDF):** [`Docs/Final Graduation Project Documentation - 2026.pdf`](Docs/Final%20Graduation%20Project%20Documentation%20-%202026.pdf)
 * **Full LaTeX Source Code:** [`Docs/LaTeX_Source/`](Docs/LaTeX_Source/) (contains all chapter `.tex` sources, vector figures, and BibTeX citations).
 
 ---
@@ -196,20 +197,20 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
 [![Email](https://img.shields.io/badge/Email-abdelrhmanmsaad22@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:abdelrhmanmsaad22@gmail.com)
 
 * **BESS & Two-Quadrant Chopper Subsystem:** Modeled and simulated the Class-C bidirectional chopper power stage, formulated discrete cascade PI control algorithms, developed embedded ATmega328P Timer 1 ($10\text{ kHz}$ Phase-Correct PWM) firmware, and verified bidirectional battery energy buffering.
-* **Hardware Prototyping & Laboratory Testing:** Contributed to physical circuit implementation, Altium Designer PCB layout and fabrication outputs, bench wiring, and experimental oscilloscope testing across converter prototypes (Two-Quadrant Chopper, Buck Charger, and Interleaved Boost) utilizing laboratory power supplies, multimeters, and active loads.
+* **Hardware Prototyping & Laboratory Testing:** Contributed to physical circuit implementation, Altium Designer PCB layout and fabrication outputs, bench wiring, and experimental oscilloscope testing across converter prototypes (Two-Quadrant Chopper, Buck Charger, and Interleaved Boost) utilizing laboratory power supplies, multimeters, active loads, and university bench oscilloscopes (Tektronix TBS1000 series and Hantek DSO).
 * **Cross-Converter Collaborative Modeling:** Co-developed and tuned closed-loop simulation models in MATLAB/Simulink, supporting multi-converter power management and DC-bus voltage stabilization.
 
 #### 🛠️ Key Technical Challenges Solved by Abd El-Rhman:
 
-1. **Optocoupler Inversion & Safe Bring-Up Protection:**
-   * *Challenge:* The 6N139 common-emitter optocoupler configuration inverts microcontroller logic (logic LOW turns driver input HIGH), creating a risk of unintended full conduction during MCU bootup.
-   * *Engineering Solution:* Formulated inverse-logic duty cycle mapping ($D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$) and enforced bootup register clamping to `OCR1A = TOP` to guarantee zero gate drive prior to control loop initialization.
+1. **Optocoupler Logic Inversion & Duty Cycle Linearization:**
+   * *Challenge:* The 6N139 common-emitter optocoupler configuration inverts microcontroller logic (logic LOW turns driver input HIGH), requiring accurate inverse duty cycle calculation.
+   * *Engineering Solution:* Formulated inverse-logic duty cycle mapping ($D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$). In firmware setup, `OCR1A` is initialized to 400 (50% nominal duty cycle) and dynamically constrained within `[50, TOP_PWM - 50]` to prevent saturation and maintain stable optocoupler switching.
 2. **High-Frequency Ground Bounce & Sensor Noise Suppression:**
    * *Challenge:* Rapid $di/dt$ switching pulses from the IRFP260N MOSFETs coupled high-frequency switching transients into the ACS712 Hall-effect sensor and MCU ADC lines.
-   * *Engineering Solution:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with moving-average ADC digital filtering.
-3. **Toroidal Acoustic Noise Elimination & Phase-Correct PWM:**
-   * *Challenge:* Standard Arduino 490 Hz PWM generated severe magnetostriction acoustic whine in the 2.0 mH toroidal choke and excessive inductor ripple.
-   * *Engineering Solution:* Directly manipulated bare-metal Timer 1 control registers to generate 10.0 kHz Phase-Correct PWM, eliminating audible noise and bounding current tracking error strictly within $\le 5\%$.
+   * *Engineering Solution:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with a 100-sample zero-offset auto-calibration routine at boot.
+3. **Toroidal Inductor Ripple & Acoustic Noise Elimination:**
+   * *Challenge:* Standard Arduino 490 Hz PWM resulted in excessive peak-to-peak inductor current ripple on the 2.0 mH toroidal choke and generated audible acoustic whine.
+   * *Engineering Solution:* Directly manipulated bare-metal Timer 1 control registers to generate 10.0 kHz Phase-Correct PWM, significantly suppressing inductor ripple and eliminating audible acoustic noise on the bench.
 
 #### 📊 Practical Competency & Artifact Mapping:
 

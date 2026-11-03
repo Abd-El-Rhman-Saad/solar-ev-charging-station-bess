@@ -81,7 +81,7 @@ To validate converter topologies under real operating dynamics, a dedicated hard
 
 | Equipment Description | Model / Tool Identifier | Operational Specifications | Role in Testbed |
 | :--- | :--- | :--- | :--- |
-| **Digital Storage Oscilloscope** | Tektronix TBS1000 Series | $100\text{ MHz}$ Bandwidth, $1\text{ GS/s}$ | PWM gate waveform, switching transient & ripple capture |
+| **Digital Storage Oscilloscope** | University Laboratory Oscilloscopes (Tektronix TBS1000 Series & Hantek DSO) | $100\text{ MHz} / 70\text{ MHz}$ Bandwidth | PWM gate waveform, switching transient & ripple capture |
 | **High-Precision Multimeter** | UNI-T UT89X / UT33D+ | True RMS, DC Current up to $20\text{ A}$ | Bench DC voltage and closed-loop current verification |
 | **Regulated DC Power Supply** | Long-Wei DC Bench Supply | $0 - 30\text{ V}$, $0 - 10\text{ A}$ Adjustable | Emulated DC bus and laboratory power source |
 | **Stationary Battery Pack** | 2S Li-ion (ICR18650 Pack) | $7.4\text{ V}$ Nominal, $2.55\text{ Ah}$ Capacity | Physical energy storage device under test |
@@ -196,7 +196,7 @@ void setup() {
 }
 
 void loop() {
-  // Read and filter raw ADC current measurement
+  // Read raw ADC current measurement (offset corrected by 100-sample auto-calibration at boot)
   int raw_adc = analogRead(SENSOR_PIN);
   float v_out = (raw_adc * VREF) / 1023.0;
   float i_meas = (v_out - ZERO_VOLTAGE) / SENSITIVITY;
@@ -229,7 +229,7 @@ void loop() {
 ## 📊 Experimental Bench Validation & Measurement Results
 
 ### 1. 10 kHz Clean Gate-Drive Pulse Waveform
-The Tektronix oscilloscope confirms high-fidelity gate drive modulation at exactly $9.998\text{ kHz} \approx 10.0\text{ kHz}$ with negligible rise/fall ringing ($t_r < 120\text{ ns}$):
+Bench testing utilized university laboratory instrumentation, including Tektronix TBS1000 series and Hantek digital storage oscilloscopes based on bench availability. Oscilloscope captures confirm clean gate drive modulation at $9.998\text{ kHz} \approx 10.0\text{ kHz}$ with rise/fall times $t_r < 120\text{ ns}$:
 
 <p align="center">
   <img src="images/waveform_gate.jpg" width="85%" alt="10 kHz Clean Gate-Drive Pulse Oscilloscope Capture" />
@@ -260,14 +260,15 @@ Serial telemetry capturing dynamic current regulation tracking target setpoints:
 
 ### Experimental Current Step Response Verification
 
-As documented in Table 6.1 of the graduation thesis, the closed-loop controller was tested across four distinct current setpoints. The experimental multimeter readings confirm tight closed-loop tracking with steady-state error bounded strictly **within 5.0%** across the entire operating range:
+Bench current tracking combines graduation thesis Table 6.1 ($0.20\text{ A}$, $0.30\text{ A}$, and $0.40\text{ A}$ nominal baseline) with extended laboratory multimeter photos in [`images/`](images/) ($0.30\text{ A}$, $0.40\text{ A}$, $0.50\text{ A}$, and $0.60\text{ A}$). The $0.40\text{ A}$ bench photo reads $0.38\text{ A}$, bounding the worst-case steady-state error across all measured setpoints at $-5.0\%$:
 
-| Current Setpoint ($I_{\text{ref}}$) | Experimental Reading ($I_{\text{meas}}$) | Absolute Error ($\Delta I$) | Relative Steady-State Error | Hardware Operational Finding |
+| Current Setpoint ($I_{\text{ref}}$) | Multimeter Reading ($I_{\text{meas}}$) | Absolute Error ($\Delta I$) | Relative Steady-State Error | Source / Verification Reference |
 | :---: | :---: | :---: | :---: | :--- |
-| **$0.30\text{ A}$** | **$0.29\text{ A}$** | $-0.01\text{ A}$ | **$-3.3\%$** | Stable tracking; low sensor SNR at lower bounds |
-| **$0.40\text{ A}$** | **$0.38\text{ A}$** | $-0.02\text{ A}$ | **$-5.0\%$** | Nominal setpoint; within thesis Table 6.1 boundary |
-| **$0.50\text{ A}$** | **$0.48\text{ A}$** | $-0.02\text{ A}$ | **$-4.0\%$** | Linear response; zero thermal drift observed |
-| **$0.60\text{ A}$** | **$0.58\text{ A}$** | $-0.02\text{ A}$ | **$-3.3\%$** | High-current ceiling; heatsink temperature $< 38^{\circ}\text{C}$ |
+| **$0.20\text{ A}$** | **$0.19\text{ A}$** | $-0.01\text{ A}$ | **$-5.0\%$** | Thesis Table 6.1 baseline |
+| **$0.30\text{ A}$** | **$0.29\text{ A}$** | $-0.01\text{ A}$ | **$-3.3\%$** | Thesis Table 6.1 & bench photo (`reading_0_3A.png`) |
+| **$0.40\text{ A}$** | **$0.38\text{ A}$** | $-0.02\text{ A}$ | **$-5.0\%$** | Bench photo (`reading_0_4A.png`); nominal setpoint |
+| **$0.50\text{ A}$** | **$0.48\text{ A}$** | $-0.02\text{ A}$ | **$-4.0\%$** | Bench photo (`reading_0_5A.png`) |
+| **$0.60\text{ A}$** | **$0.58\text{ A}$** | $-0.02\text{ A}$ | **$-3.3\%$** | Bench photo (`reading_0_6A.png`) |
 
 ### Multimeter Measurement Gallery
 

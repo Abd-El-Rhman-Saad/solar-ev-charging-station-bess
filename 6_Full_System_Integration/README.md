@@ -45,7 +45,7 @@ The top-level model integrates all three converter stages connected to the centr
 | **`Pmppt`** | PV Array | Extracted Solar Power | **$8,491\text{ W}$** | Nominal rating: $8.5\text{ kW}$ |
 | **`IL1`** | Interleaved Boost | Phase-1 Inductor Current | **$17.13\text{ A}$** | $49.1\%$ Current Sharing |
 | **`IL2`** | Interleaved Boost | Phase-2 Inductor Current | **$17.73\text{ A}$** | $50.9\%$ Current Sharing |
-| **`VDC`** | Common DC-Link | Regulated Bus Voltage | **$600.0\text{ V}$** | Zero steady-state error ($\pm 0.05\%$) |
+| **`VDC`** | Common DC-Link | Regulated Bus Voltage | **$600.0\text{ V}$** | Settles firmly at $600.0\text{ V}$ |
 | **`Vout`** | 2Q Chopper | BESS Power Stage Voltage | **$600.0\text{ V}$** | Matches common bus |
 | **`IB`** | BESS Storage | Battery Current (+Charge / -Discharge) | **$+11.25\text{ A}$** | Absorbing excess generation |
 | **`Pstorage`**| BESS Storage | Storage Battery Power | **$+4,498\text{ W}$** | Charging buffer active |
