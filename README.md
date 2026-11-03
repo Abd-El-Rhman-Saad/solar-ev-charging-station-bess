@@ -35,7 +35,7 @@ Grid-independent EV charging stations face the dual challenges of intermittent s
 | **Solar PV Generation** | **$\approx 8.5\text{ kW}$** ($8,491\text{ W}$ Scope / $\approx 8.52\text{ kW}$ Thesis) | 12V / 10W Emulated Source | P&O MPPT tracking knee of P-V curve at $V_{mp} = 243.6\text{ V}$ |
 | **Interleaved Boost Stage** | Dual-Phase, $180^\circ$ Phase Shift | Dual $2.0\text{ mH}$ Power Chokes | $49.1\% / 50.9\%$ current sharing; cancels $20\text{ kHz}$ input current ripple |
 | **BESS Energy Buffer** | **$3.48\text{ kW}$** Deficit / $+4.50\text{ kW}$ Surplus | $7.4\text{ V}$ ($2.55\text{ Ah}$) 2S Li-ion | Synchronous bidirectional power flow (Buck charge / Boost discharge) |
-| **EV Charging Power** | **$50\text{ kW}$** Utility Sizing / **$4.07\text{ kW}$** Fast Track (Surplus) / **$12.0\text{ kW}$** Deficit ($3.48\text{ kW}$ BESS support) | $3.7\text{ V} / 0.74\text{ A}$ Prototype | Dual-loop CC-CV mode transition with bumpless transfer |
+| **EV Charging Power** | **$50\text{ kW}$** Utility Sizing / **$4.07\text{ kW}$** Fast Track (Surplus) / **$12.0\text{ kW}$** Deficit ($3.48\text{ kW}$ BESS support) | $3.7\text{ V} / 0.74\text{ A}$ Prototype | Dual-loop automatic CC→CV transition |
 | **Transient Settling Time** | **$< 0.5\text{ s}$** | $< 0.4\text{ s}$ | Voltage overshoot bounded below $0.7\%$ ($\approx 0.63\%$, $603.8\text{ V}$ peak) |
 | **Switching Frequency** | $10.0\text{ kHz}$ to $20\text{ kHz}$ | **$10.0\text{ kHz}$** | ATmega328P Timer 1 Phase-Correct PWM ($1\ \mu\text{s}$ dead-time) |
 
@@ -85,10 +85,10 @@ The supervisory EMS architecture governs power balance across four conceptual op
 
 ### Quantitative Power Equilibrium Verification
 
-Telemetry recorded from the steady-state digital twin confirms energy balance across all microgrid nodes:
+Scope-snapshot power balance (single capture):
 * **Total Instantaneous Generation ($P_{\text{gen}}$):** $V_{mp} \cdot I_{mp} = 243.6\text{ V} \times 34.86\text{ A} = \mathbf{8,491.9\text{ W}}$
 * **Total Instantaneous Demand ($P_{\text{load}}$):** $P_{\text{EV}} + P_{\text{BESS}} = 4,068.0\text{ W} + 4,498.0\text{ W} = \mathbf{8,566.0\text{ W}}$
-* **Power Balance (Single Scope Snapshot):** $P_{\text{gen}} = 8{,}491.9\text{ W}$ vs $P_{\text{EV}} + P_{\text{BESS}} = 8{,}566.0\text{ W}$; the $\approx 0.9\%$ residual reflects the discrete sampling instant at which scopes were captured before full dynamic bus settling, rather than unmodeled converter losses. The graduation thesis reports the rounded steady-state nominal balance: $\approx 8.52\text{ kW} \approx 4.0\text{ kW}\text{ (EV)} + 4.52\text{ kW}\text{ (BESS)}$.**
+* **Power Balance (Single Scope Snapshot):** $P_{\text{gen}} = 8{,}491.9\text{ W}$ vs $P_{\text{EV}} + P_{\text{BESS}} = 8{,}566.0\text{ W}$; the $\approx 0.9\%$ residual is consistent with a scope capture slightly before full bus settling and is not attributed to converter losses. The graduation thesis reports the rounded steady-state nominal balance: $\approx 8.52\text{ kW} \approx 4.0\text{ kW}\text{ (EV)} + 4.52\text{ kW}\text{ (BESS)}$.
 
 ---
 
@@ -204,13 +204,13 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
 
 1. **Optocoupler Logic Inversion & Duty Cycle Linearization:**
    * *Challenge:* The 6N139 common-emitter optocoupler configuration inverts microcontroller logic (logic LOW turns driver input HIGH), requiring accurate inverse duty cycle calculation.
-   * *Engineering Solution:* Formulated inverse-logic duty cycle mapping ($D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$). In firmware setup, `OCR1A` is initialized to 400 (50% nominal duty cycle) and dynamically constrained within `[50, TOP_PWM - 50]` to prevent saturation and maintain stable optocoupler switching.
-2. **High-Frequency Ground Bounce & Sensor Noise Suppression:**
-   * *Challenge:* Rapid $di/dt$ switching pulses from the IRFP260N MOSFETs coupled high-frequency switching transients into the ACS712 Hall-effect sensor and MCU ADC lines.
-   * *Engineering Solution:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with a 100-sample zero-offset auto-calibration routine at boot.
-3. **Toroidal Inductor Ripple & Acoustic Noise Elimination:**
-   * *Challenge:* Standard Arduino 490 Hz PWM resulted in excessive peak-to-peak inductor current ripple on the 2.0 mH toroidal choke and generated audible acoustic whine.
-   * *Engineering Solution:* Directly manipulated bare-metal Timer 1 control registers to generate 10.0 kHz Phase-Correct PWM, significantly suppressing inductor ripple and eliminating audible acoustic noise on the bench.
+   * *Engineering Solution:* Formulated inverse-logic duty cycle mapping ($D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$). In firmware setup, `OCR1A` is initialized to 400 (50% nominal duty cycle) and dynamically constrained within `[50, TOP_PWM - 50]`, limiting the effective duty cycle to ≈6 %–94 % (the switch is never driven fully on or fully off).
+2. **Ground Isolation & Sensor Noise Protection (Design Architecture):**
+   * *Design Context:* Rapid $di/dt$ switching pulses from the IRFP260N MOSFETs can couple high-frequency switching transients into sensitive analog measurement lines.
+   * *Engineering Implementation:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with a 100-sample zero-offset auto-calibration routine at boot.
+3. **Switching Frequency & Audible Whine:**
+   * *Challenge:* The Arduino default PWM (≈490 Hz) is far below the 10 kHz design switching frequency of the thesis and produced a mild audible whine from the 2.0 mH toroidal choke.
+   * *Engineering Solution:* Configured Timer 1 registers for 10 kHz Phase-Correct PWM, matching the design frequency; the whine disappeared on the bench.
 
 #### 📊 Practical Competency & Artifact Mapping:
 
