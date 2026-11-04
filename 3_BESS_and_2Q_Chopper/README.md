@@ -12,7 +12,7 @@
 In an off-grid solar-powered electric vehicle charging station, generation profiles and dynamic load requirements are inherently asynchronous: peak solar irradiance rarely coincides with instantaneous EV charging events. The bidirectional **Two-Quadrant (2Q) Class-C Chopper** resolves this power mismatch by maintaining strict **instantaneous power equilibrium** across the central common DC bus:
 
 1. **Surplus Solar Generation ($P_{\text{PV}} > P_{\text{EV}}$):** The converter operates in step-down **Buck Mode**, channeling excess photovoltaic energy into the stationary battery bank ($I_{\text{batt}} > 0$).
-2. **Solar Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$):** The converter seamlessly reverses power flow, operating in step-up **Boost Mode** ($I_{\text{batt}} < 0$) to inject up to $3.48\text{ kW}$ of deficit power support from the BESS into the $600.0\text{ V}$ DC-link bus.
+2. **Solar Generation Deficit ($P_{\text{PV}} < P_{\text{EV}}$):** The converter reverses power flow, operating in step-up **Boost Mode** ($I_{\text{batt}} < 0$) to inject up to $3.48\text{ kW}$ of deficit power support from the BESS into the $600.0\text{ V}$ DC-link bus.
 3. **Common DC Bus Voltage Regulation:** While the PV interleaved boost converter tracks the maximum power point (MPPT) and the EV buck charger regulates vehicle battery current, the BESS bidirectional chopper acts as the **grid-forming voltage anchor**, tightly regulating the DC-link at $600.0\text{ V}$.
 
 ### Core Simulation Models
@@ -125,7 +125,7 @@ Where the discrete execution coefficients are:
 
 $$a_0 = K_p + \frac{K_i T_s}{2}, \quad a_1 = -K_p + \frac{K_i T_s}{2}$$
 
-This recursive formulation requires only **one multiplication and two additions per sample step**, enabling deterministic fixed-point execution inside a $10\text{ kHz}$ to $20\text{ kHz}$ interrupt service routine (ISR).
+This recursive formulation requires only **one multiplication and two additions per sample step**, eliminating complex division and transcendental functions, making it computationally light for embedded execution on resource-constrained microcontrollers (such as the ATmega328P running at $\approx 200\text{ Hz}$ in the laboratory bench prototype).
 
 ---
 
@@ -188,7 +188,7 @@ end
 
 % PART 6: Complementary Gate Driving Outputs (with zero shoot-through)
 Gate_High = S_high;
-Gate_Low  = 1 - S_high; % Perfectly complementary gate pulse
+Gate_Low  = 1 - S_high; % Complementary gate pulse
 end
 ```
 
@@ -201,32 +201,32 @@ During the design, simulation, and hardware implementation of the bidirectional 
 ### 1. Shoot-Through Prevention & Half-Bridge Gate Isolation
 * **Physical Challenge:** In a totem-pole half-bridge configuration, MOSFET turn-off delay times ($t_{\text{off}} > t_{\text{on}}$) can lead to simultaneous conduction of $Q_1$ and $Q_2$, creating a dead short across the $600\text{ V}$ bus (or the battery pack) that destroys switching silicon within microseconds.
 * **Engineered Solution:** Implemented an optocoupled half-bridge gate driver circuit utilizing the **IR2111** driver paired with high-speed **6N139** optocouplers. The IR2111 internally enforces a deterministic hardware dead-time of $t_{\text{dead}} = 1.0\ \mu\text{s}$. In firmware, the complementary gating logic ($G_{\text{low}} = 1 - G_{\text{high}}$) guarantees that dual-high gate commands can never be synthesized.
-* **Validation:** Verified across all continuous simulation runs with zero cross-conduction current spikes and zero thermal stress on prototype IRFP260N MOSFETs.
+* **Design Note:** The $1.0\ \mu\text{s}$ hardware dead-time in the IR2111 and complementary gating logic ($G_{\text{low}} = 1 - G_{\text{high}}$) prevent cross-conduction shoot-through across switching transitions.
 
 ### 2. Integrator Windup Elimination during Solar-Load Step Transients
 * **Physical Challenge:** Sudden load steps (such as EV fast charging initiation) or abrupt solar irradiance drops cause large instantaneous bus voltage errors ($e_v = V_{\text{dc}} - V_{\text{ref}}$). A standard PI controller continuously integrates this error, driving the internal state into deep saturation and causing massive bus overshoot ($> 15\%$) and prolonged settling times ($> 100\text{ ms}$).
 * **Engineered Solution:** Formulated a **Conditional Dynamic Anti-Windup Clamping** mechanism within the discrete controller. The accumulated integral error state is hard-clamped to $[-5.0, +5.0]$:
   $$\text{int\_err\_v} = \max(-5.0, \min(+5.0, \text{int\_err\_v}))$$
-* **Validation:** Reduced DC bus transient recovery time to less than $5\text{ ms}$ with voltage overshoot strictly bounded below $0.7\%$ ($603.8\text{ V}$ peak on the $600.0\text{ V}$ utility bus).
+* **Design Note:** Integrator state clamped to $[-5.0, +5.0]$; bus overshoot in the full-system closed-loop simulation peaks at $603.8\text{ V}$ on the $600.0\text{ V}$ bus ($\approx 0.63\%$).
 
-### 3. Hysteresis Band Optimization: Chattering vs. Semiconductor Thermal Stress
-* **Physical Challenge:** Hysteresis current controllers feature variable switching frequencies. If the tolerance band ($h$) is set too narrow, switching frequency escalates into the hundreds of kilohertz, inducing excessive switching losses ($P_{\text{sw}} \propto f_{\text{sw}}$) and electromagnetic interference (EMI). If $h$ is set too wide, battery current ripple exceeds cell degradation thresholds.
-* **Engineered Solution:** Conducted an iterative trade-off study balancing current ripple against thermal limits. Selected $h = 0.01\text{ A}$ for high-fidelity numerical simulation and tuned an equivalent analog/digital window ($h \approx 0.05\text{ A}$) for laboratory bench testing.
-* **Validation:** Achieved stable limit-cycle modulation without erratic chattering, keeping peak-to-peak inductor ripple well within the design target of $\Delta I_L \le 0.4\text{ A}$.
+### 3. Hysteresis Band Selection: Switching Frequency vs. Inductor Current Ripple
+* **Physical Challenge:** Hysteresis current controllers feature variable switching frequencies. If the tolerance band ($h$) is set too narrow, switching frequency escalates, inducing higher switching losses ($P_{\text{sw}} \propto f_{\text{sw}}$) and electromagnetic interference. If $h$ is set too wide, battery current ripple exceeds desired regulation thresholds.
+* **Engineered Solution:** Evaluated the trade-off between switching frequency and current ripple in simulation. Selected $h = 0.01\text{ A}$ for the Simulink hysteresis models (`BESS_2Q_All_Cases_Pro.slx` and `chopper_actual_rating.slx`), keeping peak-to-peak inductor ripple within $\Delta I_L \le 0.4\text{ A}$.
+* **Design Note:** $h = 0.01\text{ A}$ is used in the Simulink hysteresis models; the physical laboratory bench prototype implements a fixed-frequency $10.0\text{ kHz}$ Phase-Correct PI-PWM control loop (detailed in [`5_Hardware_and_PCB_Design`](../5_Hardware_and_PCB_Design/)).
 
 ### 4. Tustin Discretization for Low-Cost Microcontroller Execution
 * **Physical Challenge:** Continuous S-domain PI transfer functions require heavy numerical computation that cannot be executed in real time on resource-constrained embedded microcontrollers (such as an 8-bit ATmega328P or entry-level ARM Cortex-M) without causing execution latency that degrades phase margin.
 * **Engineered Solution:** Applied the Bilinear (Tustin) transform to derive a compact first-order recursive difference equation:
   $$u[k] = u[k-1] + a_0 \cdot e[k] + a_1 \cdot e[k-1]$$
   This requires only **one multiplication and two additions** per control cycle, avoiding floating-point library overhead.
-* **Validation:** Benchmarked controller execution time to $< 12\ \mu\text{s}$ per iteration, seamlessly executing within a $50\ \mu\text{s}$ interrupt service routine ($20\text{ kHz}$).
+* **Design Note:** Bilinear (Tustin) discretization yields a first-order recursive PI ($u[k] = u[k-1] + a_0 \cdot e[k] + a_1 \cdot e[k-1]$), suitable for an 8-bit MCU running at $\approx 200\text{ Hz}$ in the bench firmware.
 
 ### 5. Battery Cell Chemical Protection Envelope Clamping
 * **Physical Challenge:** Unconstrained control loop action could request charging currents exceeding the thermal absorption capacity of lithium-ion cells, or demand discharge rates that trigger severe voltage sag and premature cell aging.
 * **Engineered Solution:** Embedded a dual-boundary saturation limiter on the current setpoint $I_{\text{ref}}$, establishing an asymmetric safe operating area (SOA):
   $$I_{\text{ref,sat}} = \max(-10.0\text{ A}, \min(+3.1\text{ A}, I_{\text{ref}}))$$
   The $+3.1\text{ A}$ limit protects prototype ICR18650 cells against thermal runaway, while the $-10.0\text{ A}$ limit guarantees continuous bus deficit support without tripping the hardware BMS.
-* **Validation:** Fully protected the 2S Li-ion battery pack across all fault scenarios, with the HW-391 BMS remaining comfortably within its safe operating envelope.
+* **Design Note:** $I_{\text{ref}}$ is limited to $[-10.0\text{ A}, +3.1\text{ A}]$ in the simulation model; the HW-391 BMS provides the pack-level hardware protection on the physical prototype.
 
 ---
 
