@@ -45,17 +45,17 @@ The bidirectional chopper employs a Class-C half-bridge split-leg topology compr
        [ COMMON GROUND ]
 ```
 
-### 1️⃣ Quadrant II: Buck Mode (Battery Charging — Solar Surplus)
+### 1️⃣ Mode 1: Buck Charging (Solar Generation Surplus — Quadrant I)
 
-* **Physical Quadrant:** $V_{\text{batt}} > 0$, $I_{\text{batt}} > 0$ (Current entering positive battery terminal).
+* **Operating Quadrant:** $V_{\text{dc}} > 0$, $I_{\text{batt}} > 0$ (Forward current entering positive battery terminal).
 * **Conduction Path:** High-side switch $Q_1$ is actively modulated with duty cycle $D_{\text{ch}}$. When $Q_1$ turns OFF, inductor current freewheels through the anti-parallel body diode (or synchronous channel) of $Q_2$.
 * **Governing Voltage Relationship:**
   $$V_{\text{batt}} = D_{\text{ch}} \cdot V_{\text{DC}}$$
 * **Charging Current Limit:** Hard-clamped at $+3.1\text{ A}$ on the prototype scale ($+11.25\text{ A}$ on the full-scale microgrid) to safeguard lithium-ion cell chemistry against thermal runaway.
 
-### 2️⃣ Quadrant I: Boost Mode (Battery Discharging — Solar Deficit)
+### 2️⃣ Mode 2: Boost Discharging (Solar Generation Deficit — Quadrant IV)
 
-* **Physical Quadrant:** $V_{\text{DC}} > 0$, $I_{\text{batt}} < 0$ (Current exiting battery to support the bus).
+* **Operating Quadrant:** $V_{\text{DC}} > 0$, $I_{\text{batt}} < 0$ (Reverse current discharging from battery into the common DC bus).
 * **Conduction Path:** Low-side switch $Q_2$ is modulated with duty cycle $D_{\text{dis}}$, storing energy in inductor $L$. When $Q_2$ turns OFF, inductor voltage boosts and releases energy through $Q_1$ into the DC-Link capacitor.
 * **Governing Voltage Relationship:**
   $$V_{\text{DC}} = \frac{V_{\text{batt}}}{1 - D_{\text{dis}}}$$
@@ -93,13 +93,15 @@ The BESS chopper implements a **Cascaded Closed-Loop Control Structure** operati
    * **Modulation Logic:**
      * If $I_{\text{batt,meas}} < (I_{\text{ref,sat}} - h) \implies S_{\text{high}} = 1, S_{\text{low}} = 0$ (Upper IGBT ON, increases current).
      * If $I_{\text{batt,meas}} > (I_{\text{ref,sat}} + h) \implies S_{\text{high}} = 0, S_{\text{low}} = 1$ (Lower IGBT ON, decreases current).
-   * Hysteresis control delivers instantaneous limit-cycle tracking without phase lag and guarantees unconditional stability under non-linear switching transients.
+   * Hysteresis control provides fast limit-cycle tracking and robust dynamic response under non-linear switching transients.
 
 ---
 
 ## 📐 Discrete Z-Domain Transformation & Embedded Difference Equation
 
-To transition the continuous-time voltage PI controller from Simulink into embedded microcontroller firmware (such as the ATmega328P or ARM Cortex-M), the continuous transfer function was mapped to the discrete $Z$-domain.
+> **Note on Discretization & Implementation Formulation:** The Simulink MATLAB Function block (`BESS_2Q_All_Cases_Pro.slx`) executes a position-form PI with forward-Euler rectangular integration ($T_s = 50\ \mu\text{s}$). The Tustin (bilinear) discretization derived below is the discrete formulation developed for the microcontroller implementation (thesis §4.1.2.6, $T_s = 100\ \mu\text{s}$, $10\text{ kHz}$).
+
+To transition the continuous-time voltage PI controller from continuous s-domain into discrete embedded firmware, the transfer function was mapped to the discrete $Z$-domain.
 
 ### 1. Continuous S-Domain Formulation
 
@@ -218,7 +220,7 @@ During the design, simulation, and hardware implementation of the bidirectional 
 * **Physical Challenge:** Continuous S-domain PI transfer functions require heavy numerical computation that cannot be executed in real time on resource-constrained embedded microcontrollers (such as an 8-bit ATmega328P or entry-level ARM Cortex-M) without causing execution latency that degrades phase margin.
 * **Engineered Solution:** Applied the Bilinear (Tustin) transform to derive a compact first-order recursive difference equation:
   $$u[k] = u[k-1] + a_0 \cdot e[k] + a_1 \cdot e[k-1]$$
-  This requires only **one multiplication and two additions** per control cycle, avoiding floating-point library overhead.
+  This requires only **one multiplication and two additions** per control cycle, suitable for low-overhead fixed-point execution.
 * **Design Note:** Bilinear (Tustin) discretization yields a first-order recursive PI ($u[k] = u[k-1] + a_0 \cdot e[k] + a_1 \cdot e[k-1]$), suitable for an 8-bit MCU running at $\approx 200\text{ Hz}$ in the bench firmware.
 
 ### 5. Battery Cell Chemical Protection Envelope Clamping
@@ -239,9 +241,9 @@ To systematically validate the superiority of the cascaded PI + hysteresis contr
 | **Case 1A** | Open-Loop Buck | Fixed-Duty PWM ($D = 0.5$) | $V_{\text{dc}} = 26.0\text{ V} > V_{\text{ref}}$ | Charging ($I_{\text{batt}} > 0$) | Baseline verification; lacks voltage regulation under load shifts |
 | **Case 1B** | Open-Loop Boost | Fixed-Duty PWM ($D = 0.5$) | $V_{\text{dc}} = 23.5\text{ V} < V_{\text{ref}}$ | Discharging ($I_{\text{batt}} < 0$) | Baseline verification; exhibits duty-dependent voltage drop |
 | **Case 2A** | Closed-Loop Buck | Simulink Block-based PI + Hysteresis | Regulated to $24.0\text{ V}$ | Clamped at $+3.1\text{ A}$ | Fast settling; blocks introduce minor visual simulation overhead |
-| **Case 2B** | Closed-Loop Boost | Simulink Block-based PI + Hysteresis | Regulated to $24.0\text{ V}$ | Fast support at $-10.0\text{ A}$ | Immediate deficit recovery; eliminates DC bus sag |
-| **Case 3A** | Closed-Loop Buck | **Embedded MATLAB Function (`fcn`)** | Regulated to **$24.0\text{ V}$** | Saturated at **$+3.1\text{ A}$** | **Optimal architecture:** C-convertible, zero algebraic loops, minimal memory |
-| **Case 3B** | Closed-Loop Boost | **Embedded MATLAB Function (`fcn`)** | Regulated to **$24.0\text{ V}$** | Tracked at **$-10.0\text{ A}$** | **Optimal architecture:** Instantaneous transient step response ($< 5\text{ ms}$) |
+| **Case 2B** | Closed-Loop Boost | Simulink Block-based PI + Hysteresis | Regulated to $24.0\text{ V}$ | Fast support at $-10.0\text{ A}$ | Rapid deficit recovery; mitigates DC bus voltage sag |
+| **Case 3A** | Closed-Loop Buck | **Embedded MATLAB Function (`fcn`)** | Regulated to **$24.0\text{ V}$** | Saturated at **$+3.1\text{ A}$** | C-convertible state-space logic, modular execution without algebraic loops |
+| **Case 3B** | Closed-Loop Boost | **Embedded MATLAB Function (`fcn`)** | Regulated to **$24.0\text{ V}$** | Tracked at **$-10.0\text{ A}$** | Rapid bidirectional current response mitigating DC bus voltage sag |
 
 ---
 
@@ -290,7 +292,7 @@ Demonstrates the smooth startup transient and tight current regulation during hi
 </p>
 
 ### 7. Instantaneous Deficit Discharging Support (-10 A)
-Shows the rapid negative current step response, proving that the BESS immediately supplies up to $10\text{ A}$ of deficit current to prevent DC bus collapse:
+Shows the rapid negative current step response, showing that the BESS immediately supplies up to $10\text{ A}$ of deficit current to mitigate DC bus voltage sag:
 
 <p align="center">
   <img src="images/bess_discharging_current_scope_300dpi.png" width="85%" alt="BESS Discharging Current Transient Scope" />

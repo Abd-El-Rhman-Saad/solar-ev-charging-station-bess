@@ -43,25 +43,27 @@ Where:
 * $R_s$ models internal semiconductor bulk and contact resistances.
 * $R_p$ models p-n junction leakage current.
 
-### Standard Test Conditions (STC) & Physical Module Baseline
+### Module Analytical Parameters & Physical Baseline (`pv_curves.slx`)
 
-The analytical parameters were configured to replicate the project's physical solar module baseline under Standard Test Conditions ($1000\text{ W/m}^2$, $25^\circ\text{C}$):
+The analytical parameters below configure the single-diode simulation model (`pv_curves.slx`) at nominal cell operating temperature ($1000\text{ W/m}^2$, $318\text{ K} / 45^\circ\text{C}$):
 
-| Parameter | Symbol | Value | Physical Significance |
+> **Note on Model Scope vs. Full-Scale Utility Array:** The simulation model `pv_curves.slx` characterizes a **single standalone PV module (~95 W)** to extract non-linear I-V and P-V characteristic curves and assess temperature sensitivity. In the integrated microgrid simulation (Modules 2 and 6), a full-scale utility array of 12 series-parallel modules rated at 710 W nominal each (8.52 kW total nominal capacity) is deployed to supply the common 600.0 V DC bus.
+
+| Parameter | Symbol | Value | Physical Significance / Operational Context |
 | :--- | :---: | :---: | :--- |
 | **Nominal Irradiance** | $G_{\text{ref}}$ | $1000\text{ W/m}^2$ | Solar insolation benchmark |
-| **Cell Temperature** | $T_{\text{ref}}$ | $318\text{ K}\ (45^\circ\text{C})$ | Nominal operational cell temperature (NOCT) |
-| **Silicon Bandgap Energy** | $E_g$ | $1.12\text{ eV}$ | Silicon crystal potential barrier |
+| **Cell Temperature** | $T_{\text{cell}}$ | $318\text{ K}\ (45^\circ\text{C})$ | Operational study temperature (NOCT; not $25^\circ\text{C}$ STC) |
+| **Open-Circuit Voltage** | $V_{\text{oc}}$ | $22.94\text{ V}$ | Single module open-circuit voltage |
+| **Short-Circuit Current** | $I_{\text{sc}}$ | $5.56\text{ A}$ | Single module short-circuit current limit |
+| **Voltage at MPP** | $V_{\text{mp}}$ | $\approx 18.7\text{ V}$ | Terminal voltage at maximum power point (read from curve) |
+| **Current at MPP** | $I_{\text{mp}}$ | $\approx 5.1\text{ A}$ | Terminal current at maximum power point (read from curve) |
+| **Maximum Power Point** | $P_{\text{max}}$ | $\approx 95\text{ W}$ | Peak power: $V_{\text{mp}} \cdot I_{\text{mp}} \approx 18.7\text{ V} \times 5.1\text{ A} \approx 95.4\text{ W}$ |
 | **Series Cells per Module** | $N_s$ | $36$ | Monocrystalline series cell count |
-| **Maximum Power Point** | $P_{\text{max}}$ | $192.52\text{ W}$ | Peak extractable electrical power |
-| **Voltage at MPP** | $V_{\text{mp}}$ | $36.0\text{ V}$ | Terminal voltage at maximum power point |
-| **Current at MPP** | $I_{\text{mp}}$ | $5.32\text{ A}$ | Terminal current at maximum power point |
-| **Open-Circuit Voltage** | $V_{\text{oc}}$ | $229.4\text{ V}$ | Array series voltage ($22.94\text{ V} \times 10$) |
-| **Short-Circuit Current** | $I_{\text{sc}}$ | $5.56\text{ A}$ | Array short-circuit current limit |
-| **Series Resistance** | $R_s$ | $0.145\ \Omega$ | Ohmic dissipation in metal fingers |
-| **Parallel Resistance** | $R_p$ | $300\ \Omega$ | Shunt current path resistance across cell junction |
-| **Temperature Coefficient** | $K_i$ | $0.0021\text{ A/K}$ | Short-circuit current thermal drift sensitivity |
-| **Diode Ideality Factor** | $a$ | $1.3$ | p-n junction carrier recombination factor |
+| **Silicon Bandgap Energy** | $E_g$ | $1.12\text{ eV}$ | Silicon crystal potential barrier |
+| **Series Resistance** | $R_s$ | $0.145\ \Omega$ | Ohmic dissipation in cell fingers and bulk silicon |
+| **Parallel Resistance** | $R_p$ | $300\ \Omega$ | Shunt resistance across p-n junction |
+| **Temperature Coefficient** | $K_i$ | $0.0021\text{ A/K}$ | Short-circuit current thermal drift coefficient |
+| **Diode Ideality Factor** | $a$ | $1.3$ | Single-diode junction carrier recombination factor |
 
 ### Analytical Curve Extraction Model
 
@@ -73,7 +75,7 @@ The Simulink model numerically solves the implicit transcendental I-V equation t
 
 ### Non-Linear Characteristic Curves (STC 1000 W/m²)
 
-The resulting characteristic curves confirm exact alignment with theoretical limits, highlighting the knee voltage at $V_{\text{mp}} = 36.0\text{ V}$ and peak power $P_{\text{max}} = 192.52\text{ W}$:
+The resulting characteristic curves confirm exact alignment with single-diode physics, displaying the maximum power knee at $V_{\text{mp}} \approx 18.7\text{ V}$, $I_{\text{mp}} \approx 5.1\text{ A}$, and peak power $P_{\text{max}} \approx 95\text{ W}$ ($V_{\text{oc}} = 22.94\text{ V}$, $I_{\text{sc}} = 5.56\text{ A}$):
 
 #### P-V Characteristic Power Curve
 <p align="center">

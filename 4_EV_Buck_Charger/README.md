@@ -142,7 +142,7 @@ Full-scale telemetry displaying instantaneous battery voltage ($V_{\text{bat}}$)
 </p>
 
 ### 8. Zoomed Waveform View in CV Mode
-Close-up transient scope proving sub-$0.1\text{ V}$ voltage ripple and stable current regulation:
+Close-up transient scope showing sub-$0.1\text{ V}$ voltage ripple and stable current regulation:
 
 <p align="center">
   <img src="images/buck_cccv_zoomed_ripple_300dpi.png" width="85%" alt="Zoomed Waveform View in CV Mode" />

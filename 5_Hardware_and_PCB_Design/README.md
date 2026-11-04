@@ -128,6 +128,12 @@ Full hardware integration featuring DC power supplies, oscilloscope probing, mul
 
 To achieve deterministic high-speed switching without software jitter, the **ATmega328P** internal 16-bit Timer/Counter 1 was configured in **Phase-Correct PWM Mode** using direct hardware register manipulation.
 
+### Firmware Architecture & Implementation Context
+
+> **Firmware Implementation Roles:**
+> * **Bench Testing & Telemetry Firmware (Listing below):** The Arduino C++ sketch below was flashed during physical bench verification to log closed-loop current step responses and stream real-time ASCII telemetry (`I_meas | Target | OCR1A`) to the Serial Monitor at $\approx 200\text{ Hz}$ loop rate (`delay(5)`).
+> * **Fixed-Point ISR Production Firmware (Thesis Listing 6.3):** The project thesis implements an advanced 32-bit fixed-point (`int32_t`, scaling $2^{17}$) digital PI regulator executed inside a deterministic $10.0\text{ kHz}$ Timer 1 Overflow Interrupt Service Routine (`ISR(TIMER1_OVF_vect)`), avoiding floating-point overhead for cycle-by-cycle control.
+
 ### Mathematical Timer Configuration
 
 Under Phase-Correct PWM mode (Mode 10, WGM13:0 = 1010b with ICR1 as TOP):
@@ -204,8 +210,8 @@ void loop() {
   // Outer loop: Calculate error against target
   float error = TARGET_I - i_meas;
 
-  // Discrete trapezoidal integral accumulation with anti-windup clamping
-  integral_err += error * 0.005; // dt = 5 ms sample time
+  // Discrete forward-Euler rectangular integral accumulation with anti-windup clamping
+  integral_err += error * 0.005; // dt = 5 ms sample time (~200 Hz loop)
   integral_err = constrain(integral_err, -50.0, 50.0);
 
   // PI control effort synthesis

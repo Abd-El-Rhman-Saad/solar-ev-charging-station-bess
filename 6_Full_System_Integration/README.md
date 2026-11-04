@@ -16,7 +16,7 @@ This directory contains the closed-loop integrated MATLAB/Simulink system model,
 The primary engineering challenge of a grid-independent solar EV charging station is achieving **instantaneous power balance** and **tight DC-bus voltage regulation** under dynamic generation and fluctuating vehicle loads. 
 
 The integrated system implements a decentralized hierarchical control structure where:
-1. **Generation Stage (MPPT):** Maximizes renewable solar harvesting by extracting $8.49\text{ kW}$ from the PV array under standard test conditions (STC).
+1. **Generation Stage (MPPT):** Maximizes renewable solar harvesting by extracting $8.49\text{ kW}$ from the PV array at the simulated operating point.
 2. **Voltage Regulation & Energy Buffer (BESS 2Q Chopper):** Regulates the common DC-link voltage firmly at $600.0\text{ V}$ via a dual-loop cascade PI controller, absorbing excess solar generation or injecting stored energy during solar deficits.
 3. **EV Charging Stage (Fast Buck Charger):** Delivers a regulated constant-current (CC) profile ($10.17\text{ A}$, $4.07\text{ kW}$) to the EV battery pack using high-speed hysteresis current tracking.
 
@@ -47,7 +47,7 @@ The top-level model integrates all three converter stages connected to the centr
 | **`IL2`** | Interleaved Boost | Phase-2 Inductor Current | **$17.73\text{ A}$** | $50.9\%$ Current Sharing |
 | **`VDC`** | Common DC-Link | Regulated Bus Voltage | **$600.0\text{ V}$** | Settles firmly at $600.0\text{ V}$ |
 | **`Vout`** | 2Q Chopper | BESS Power Stage Voltage | **$600.0\text{ V}$** | Matches common bus |
-| **`IB`** | BESS Storage | Battery Current (+Charge / -Discharge) | **$+11.25\text{ A}$** | Absorbing excess generation |
+| **`IB`** | BESS Storage | Battery Current (+Charge / -Discharge) | **$+11.25\text{ A}$** | Absorbing excess generation at its charge-current limit |
 | **`Pstorage`**| BESS Storage | Storage Battery Power | **$+4,498\text{ W}$** | Charging buffer active |
 | **`IbEV`** | EV Charger | EV Battery Charging Current | **$10.17\text{ A}$** | Constant Current Mode active |
 | **`VoutEv`**| EV Charger | Buck Chopper Switching Voltage | **$600.0\text{ V}$** | Switched rail from DC bus |
@@ -67,7 +67,7 @@ Where:
 * $P_{\text{BESS}} = V_{\text{batt,BESS}} \cdot I_B = \mathbf{4,498.0\text{ W}}$
 * Sum of active loads: $P_{\text{EV}} + P_{\text{BESS}} = 4,068 + 4,498 = \mathbf{8,566.0\text{ W}}$
 
-The slight difference ($\approx 0.8\%$) represents converter switching losses, inductor resistance dissipation ($I^2 R$), and dynamic capacitor ripple balance, verifying high-fidelity closed-loop energy conservation.
+* **Power Balance (Single Scope Snapshot):** $P_{\text{gen}} = 8{,}491.9\text{ W}$ vs $P_{\text{EV}} + P_{\text{BESS}} = 8{,}566.0\text{ W}$; the $\approx 0.9\%$ residual is consistent with a scope capture slightly before full bus settling and is not attributed to converter losses. The graduation thesis reports the rounded steady-state nominal balance: $\approx 8.52\text{ kW} \approx 4.0\text{ kW}\text{ (EV)} + 4.52\text{ kW}\text{ (BESS)}$.
 
 ### Operational Modes of the EMS
 
@@ -178,7 +178,7 @@ The generated solar power ($P_{\text{PV}} = 8491\text{ W}$) is continuously trac
 </p>
 
 ### 3. Current Sharing & Ripple Cancellation
-The total input solar current ($34.86\text{ A}$) is split symmetrically between the two boost phases ($I_{L1} = 17.13\text{ A}$, $I_{L2} = 17.73\text{ A}$), validating near-ideal current sharing:
+The total input solar current ($34.86\text{ A}$) is split symmetrically between the two boost phases ($I_{L1} = 17.13\text{ A}$, $I_{L2} = 17.73\text{ A}$), operating within $\approx 2$ percentage points of an even split ($49.1\% / 50.9\%$):
 
 <p align="center">
   <img src="images/Scope_11_Imp_IL1_IL2.png" width="90%" alt="PV Total Current and Dual-Phase Inductor Current Sharing" />

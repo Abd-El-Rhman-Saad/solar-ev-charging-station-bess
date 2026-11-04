@@ -120,7 +120,7 @@ The zoomed scope below captures the $180^\circ$ out-of-phase inductor currents (
 </p>
 
 ### 3. Full Closed-Loop Architecture
-The final design implements an outer voltage regulation loop cascaded into dual inner current loops to maintain perfect current sharing and bus stability:
+The final design implements an outer voltage regulation loop cascaded into dual inner current loops to maintain balanced current sharing ($\approx 50/50$) and bus stability:
 
 <p align="center">
   <img src="images/interleaved_full_control_model_300dpi.png" width="95%" alt="Closed-Loop Interleaved Boost Control Architecture" />
