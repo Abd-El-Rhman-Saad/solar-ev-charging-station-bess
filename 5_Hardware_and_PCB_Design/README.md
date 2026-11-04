@@ -1,6 +1,6 @@
 # 🛠️ Hardware Prototyping & PCB Design
 
-> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Altium PCB Design, High-Power Layout Integrity, ATmega328P Timer 1 Firmware & Bench Instrumentation Testing
@@ -48,6 +48,18 @@ Detailed circuit design showing the gate-drive optocoupler isolation stage, boot
 <p align="center">
   <img src="images/pcb_3d_isometric.png" width="90%" alt="Altium PCB 3D Isometric Board Layout" />
 </p>
+
+---
+
+### 🔧 Fabrication Notes & Manual Rework (Interleaved Boost Board)
+
+The Interleaved Boost board was manufactured with component spacing tighter than comfortable for manual hand soldering, and a routing layout error was identified post-fabrication. The fabricated board was successfully corrected by hand on the bench: affected copper tracks were cut and critical connections re-routed between the two copper layers using jumper wiring, after which the board operated as intended.
+
+**Engineering Lessons Learned:**
+* Enforce design-rule clearances (DRC) tailored to the target assembly method (hand soldering) rather than automated assembly minimums.
+* Execute a multi-layer design review and comprehensive DRC checklist prior to sending fabrication Gerber files to manufacturing.
+
+> **Note on Archive Files:** The Altium design files in `Interleaved_Thevenin.zip` reflect the layout *before* this manual rework; the physical corrections were performed by hand on the fabricated board.
 
 ---
 
@@ -130,9 +142,9 @@ To achieve deterministic high-speed switching without software jitter, the **ATm
 
 ### Firmware Architecture & Implementation Context
 
-> **Firmware Implementation Roles:**
-> * **Bench Testing & Telemetry Firmware (Listing below):** The Arduino C++ sketch below was flashed during physical bench verification to log closed-loop current step responses and stream real-time ASCII telemetry (`I_meas | Target | OCR1A`) to the Serial Monitor at $\approx 200\text{ Hz}$ loop rate (`delay(5)`).
-> * **Fixed-Point ISR Production Firmware (Thesis Listing 6.3):** The project thesis implements an advanced 32-bit fixed-point (`int32_t`, scaling $2^{17}$) digital PI regulator executed inside a deterministic $10.0\text{ kHz}$ Timer 1 Overflow Interrupt Service Routine (`ISR(TIMER1_OVF_vect)`), avoiding floating-point overhead for cycle-by-cycle control.
+> **Firmware Versions Documented in this Repository:**
+> * **Closed-Loop PI Firmware (Thesis §6.2.5.2, Listing 6.3):** 32-bit fixed-point (`int32_t`, scaling $2^{17}$) PI regulator with Tustin-derived coefficients, executed inside the 10 kHz Timer 1 overflow ISR. The thesis attributes the closed-loop bench results (Fig. 6.31, Table 6.1) to this controller.
+> * **Telemetry Sketch (below):** A floating-point Arduino sketch of the current PI loop that prints `I_meas | Target | OCR1A` to the Serial Monitor — the same log format shown in the bench photo `serial_monitor.jpg`. Its loop rate (`delay(5)`, $\approx 200\text{ Hz}$) applies to this listing as written.
 
 ### Mathematical Timer Configuration
 

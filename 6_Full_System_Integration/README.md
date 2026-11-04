@@ -1,6 +1,6 @@
 # 🌐 Full System Integration & Multi-Converter Microgrid Control
 
-> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Closed-Loop Multi-Converter Microgrid, Energy Management Strategy (EMS), 600V DC-Link Voltage Anchoring & Telemetry Verification
@@ -30,7 +30,7 @@ The integrated system implements a decentralized hierarchical control structure 
 
 ## 🏛️ Master Architecture & Real-Time Telemetry
 
-The top-level model integrates all three converter stages connected to the centralized $600\text{ V}$ DC-link bus. The simulation results demonstrate steady-state convergence and absolute energy conservation across all nodes:
+The top-level model integrates all three converter stages connected to the centralized $600\text{ V}$ DC-link bus. The simulation results demonstrate steady-state convergence of the DC-bus voltage and a balanced power split among the three converter stages:
 
 <p align="center">
   <img src="images/System_00_Root_Solar_EV_BESS_Full_Sys_Full_Overview.png" width="95%" alt="Full Integrated Microgrid Simulink Architecture" />
@@ -74,7 +74,7 @@ Where:
 ```
                      ┌─────────────────────────────────────────┐
                      │          Solar PV Generation            │
-                     │          P_PV = 8,491 W (STC)           │
+                     │               P_PV = 8,491 W            │
                      └────────────────────┬────────────────────┘
                                           │
                                           ▼

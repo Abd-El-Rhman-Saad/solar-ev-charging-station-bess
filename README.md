@@ -190,32 +190,37 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
 
 ### 👤 Individual Contribution & Technical Scope
 
-**Abd El-Rhman Muhammad Saad (Project Engineer):** Focused on the **Two-Quadrant Chopper & BESS Subsystem**, Altium PCB layouts, and laboratory hardware bench testing:
+**Abd El-Rhman Muhammad Saad — Hardware Design, Review & Bench Validation:**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Abd_El--Rhman_Saad-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/Abd-El-Rhman-Saad)
 [![GitHub](https://img.shields.io/badge/GitHub-Abd--El--Rhman--Saad-181717?logo=github&logoColor=white)](https://github.com/Abd-El-Rhman-Saad)
 [![Email](https://img.shields.io/badge/Email-abdelrhmanmsaad22@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:abdelrhmanmsaad22@gmail.com)
 
-* **BESS & Two-Quadrant Chopper Subsystem:** Modeled and simulated the Class-C bidirectional chopper power stage, formulated discrete cascade PI control algorithms, developed embedded ATmega328P Timer 1 ($10\text{ kHz}$ Phase-Correct PWM) firmware, and verified bidirectional battery energy buffering.
-* **Hardware Prototyping & Laboratory Testing:** Contributed to physical circuit implementation, Altium Designer PCB layout and fabrication outputs, bench wiring, and experimental oscilloscope testing across converter prototypes (Two-Quadrant Chopper, Buck Charger, and Interleaved Boost) utilizing laboratory power supplies, multimeters, active loads, and university bench oscilloscopes (Tektronix TBS1000 series and Hantek DSO).
-* **Cross-Converter Collaborative Modeling:** Co-developed and tuned closed-loop simulation models in MATLAB/Simulink, supporting multi-converter power management and DC-bus voltage stabilization.
+| Board | Role |
+| :--- | :--- |
+| **Two-Quadrant Chopper** | Sole designer: schematic and PCB layout in Altium Designer; also assembled, soldered, and bench-tested the board. |
+| **Interleaved Boost Converter** | Reviewed the sub-team's design and corrected errors; after fabrication, reworked the printed board by hand (cut tracks and re-routed connections between the two copper layers) to resolve a layout error and tight component spacing that affected soldering. |
+| **EV Buck Charger** | Reviewed the design and advised on it; assembled and soldered the board. |
 
-#### 🛠️ Key Technical Challenges Solved by Abd El-Rhman:
+* **Firmware:** Debugged and reviewed the embedded control firmware (written primarily by teammate Mai Nagah Ali), identifying errors and applying fixes during bench verification.
+* **Simulation:** Built an independent Simulink model of the BESS / two-quadrant chopper system; the team cross-reviewed each other's models and converged on the final integrated model.
 
-1. **Optocoupler Logic Inversion & Duty Cycle Linearization:**
-   * *Challenge:* The 6N139 common-emitter optocoupler configuration inverts microcontroller logic (logic LOW turns driver input HIGH), requiring accurate inverse duty cycle calculation.
-   * *Engineering Solution:* Formulated inverse-logic duty cycle mapping ($D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$). In firmware setup, `OCR1A` is initialized to 400 (50% nominal duty cycle) and dynamically constrained within `[50, TOP_PWM - 50]`, limiting the effective duty cycle to ≈6 %–94 % (the switch is never driven fully on or fully off).
+#### 🛠️ Key Technical Challenges Addressed by Abd El-Rhman:
+
+1. **Optocoupler Logic Inversion (Design Fact):**
+   * *Circuit Behavior:* The 6N139 common-emitter optocoupler configuration inverts microcontroller logic (logic LOW turns driver input HIGH).
+   * *Implementation Fact:* The gate driver stage is inverted, so the control firmware computes the effective duty cycle as $D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$, with `OCR1A` constrained within `[50, TOP_PWM - 50]` to bound effective duty between $\approx 6\% \text{ and } 94\%$.
 2. **Ground Isolation & Sensor Noise Protection (Design Architecture):**
    * *Design Context:* Rapid $di/dt$ switching pulses from the IRFP260N MOSFETs can couple high-frequency switching transients into sensitive analog measurement lines.
    * *Engineering Implementation:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with a 100-sample zero-offset auto-calibration routine at boot.
 3. **Switching Frequency & Audible Whine:**
-   * *Challenge:* The Arduino default PWM (≈490 Hz) is far below the 10 kHz design switching frequency of the thesis and produced a mild audible whine from the 2.0 mH toroidal choke.
-   * *Engineering Solution:* Configured Timer 1 registers for 10 kHz Phase-Correct PWM, matching the design frequency; the whine disappeared on the bench.
+   * *Observation:* An audible whine was observed from the 2.0 mH toroidal choke under the Arduino default PWM frequency ($\approx 490\text{ Hz}$).
+   * *Resolution:* The whine disappeared completely on the bench after configuring bare-metal Timer 1 registers for the $10.0\text{ kHz}$ design frequency.
 
 #### 📊 Practical Competency & Artifact Mapping:
 
 | Core Competency | Industrial Tools & Standards Applied | Verified Artifact in Repository |
 | :--- | :--- | :--- |
-| **Power PCB Design** | Altium Designer 24, Star Grounding, IPC-2221 | [`5_Hardware_and_PCB_Design/`](5_Hardware_and_PCB_Design/) |
-| **Embedded Firmware** | Bare-Metal C++, ATmega328P Timer 1 Registers, Anti-Windup | [`5_Hardware_and_PCB_Design/README.md`](5_Hardware_and_PCB_Design/README.md) |
-| **Closed-Loop Control** | Simscape Electrical, Bilinear Z-Domain, Cascade PI | [`3_BESS_and_2Q_Chopper/`](3_BESS_and_2Q_Chopper/) |
+| **Power PCB Design & Rework** | Altium Designer 24, Star Grounding, Manual PCB Rework | [`5_Hardware_and_PCB_Design/`](5_Hardware_and_PCB_Design/) |
+| **Firmware Review & Bench Debugging** | Embedded C++, AVR Timer 1 Registers, Serial Telemetry | [`5_Hardware_and_PCB_Design/README.md`](5_Hardware_and_PCB_Design/README.md) |
+| **Closed-Loop Converter Modeling** | Simscape Electrical, Cascade PI, Bidirectional Chopper | [`3_BESS_and_2Q_Chopper/`](3_BESS_and_2Q_Chopper/) |

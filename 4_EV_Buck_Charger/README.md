@@ -1,6 +1,6 @@
 # 🚗 EV Buck Charger: Power Stage, Hardware Prototyping & Closed-Loop CC/CV Control
 
-> **Project Engineer:** Abd El-Rhman Muhammad Saad  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Step-Down Power Stage Sizing, Measured Parasitic Compensation, Discrete PI Current Control & Automated CC/CV State Logic
@@ -14,7 +14,7 @@ In the Solar-Powered EV Charging Station microgrid, the **DC-DC Step-Down (Buck)
 The technical documentation and simulation models capture the complete engineering progression:
 1. **Utility-Scale Open-Loop Stage ($50\text{ kW}$):** Continuous Conduction Mode (CCM) verification, component sizing, and passive ripple filtering from $600.0\text{ V}$ down to $400.0\text{ V}$.
 2. **Laboratory Prototype Current Regulation:** Discrete-time PI current controller operating at $10\text{ kHz}$, incorporating real-world semiconductor drops and measured parasitic resistances.
-3. **Full Multi-Stage Automated CC/CV Charger:** Supervisory state-machine logic executing seamless mode transitions to maximize battery lifespan and eliminate overcharging.
+3. **Full Multi-Stage Automated CC/CV Charger:** Supervisory state-machine logic executing automatic mode transitions to maximize battery lifespan and limit overcharging.
 
 ### File Architecture & Simulation Manifest
 
@@ -73,12 +73,12 @@ $$C_{\text{min}} = \frac{\Delta I_L}{8 \cdot \Delta V_o \cdot f_{\text{sw}}} = \
 
 ## 🔋 Closed-Loop CC/CV Battery Charging Control
 
-Lithium-ion vehicle traction packs require two distinct charging phases to ensure maximum energy density while strictly preventing cell thermal degradation:
+Lithium-ion vehicle traction packs require two distinct charging phases to ensure maximum energy density while preventing cell thermal degradation:
 
 | Charging Regime | Operational Condition | Control Objective | Terminal Dynamics |
 | :--- | :--- | :--- | :--- |
 | **Constant Current (CC)** | $V_{\text{batt}} < 420.0\text{ V}$ | Inner current PI loop regulates charging current at rated limit ($I_{\text{rated}} = -50\text{ A}$). | Terminal voltage rises steadily as bulk capacity is replenished. |
-| **Constant Voltage (CV)** | $V_{\text{batt}} \ge 420.0\text{ V}$ | Outer voltage PI loop clamps terminal voltage strictly at $420.0\text{ V}$. | Charging current decays exponentially; cutoff occurs as battery reaches full capacity. |
+| **Constant Voltage (CV)** | $V_{\text{batt}} \ge 420.0\text{ V}$ | Outer voltage PI loop clamps terminal voltage at $420.0\text{ V}$. | Charging current decays exponentially; cutoff occurs as battery reaches full capacity. |
 
 ### CC-to-CV Supervisory Transition Logic
 
@@ -128,7 +128,7 @@ Supervisory state logic that monitors terminal voltage and smoothly hands over c
 </p>
 
 ### 6. Complete Dynamic CC/CV Charging Cycle (Annotated Overview)
-Shows terminal voltage climbing to $420.0\text{ V}$, the seamless transition point ($t = 6.2\text{ s}$), and subsequent current decay:
+Shows terminal voltage climbing to $420.0\text{ V}$, the automatic transition point ($t = 6.2\text{ s}$), and subsequent current decay:
 
 <p align="center">
   <img src="images/Buck_CCCV_Scope.png" width="90%" alt="Complete Dynamic CC/CV Charging Cycle Waveform" />
