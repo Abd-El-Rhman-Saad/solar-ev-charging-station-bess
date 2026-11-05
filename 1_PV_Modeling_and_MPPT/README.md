@@ -244,6 +244,9 @@ The high-power central boost converter interfaces the shaded PV array with the $
   <img src="images/global_mppt_system_300dpi.png" width="95%" alt="Global Scanning Central Boost System Overview" />
 </p>
 
+<p align="center"><img src="images/Central_Boost_MPPT_with_check_Page1.png" width="85%"><br><em>Central boost topology: 12-module PV array feeding the boost stage (Simulink, page 1).</em></p>
+<p align="center"><img src="images/Central_Boost_MPPT_with_check_Page2.png" width="85%"><br><em>Global-sweep MPPT controller subsystem and measurement chain (Simulink, page 2).</em></p>
+
 ### Four-Stage Global Forced Sweep State Machine
 
 The supervisory controller executes a deterministic sequential sweep when a power divergence is detected:
@@ -277,7 +280,9 @@ The dynamic scope below shows the power recovering to the $\approx 5\text{ kW}$ 
 ├── mppt_po.c                                          # ANSI C embedded microcontroller firmware source
 ├── Incremental_conductance.slx                        # Comparative simulation benchmark model
 ├── Central_Boost_MPPT_with_check.slx                  # Advanced Global Scanning MPPT under PSC
-└── images/                                            # 300 DPI high-resolution architecture & scope assets
+└── images/                                            # High-resolution architecture & scope assets
+    ├── Central_Boost_MPPT_with_check_Page1.png
+    ├── Central_Boost_MPPT_with_check_Page2.png
     ├── curves_model_300dpi.png
     ├── global_mppt_power_recovery_300dpi.png
     ├── global_mppt_state_machine_300dpi.png

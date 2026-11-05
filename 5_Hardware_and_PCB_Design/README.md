@@ -128,10 +128,10 @@ Full hardware integration featuring DC power supplies, oscilloscope probing, mul
 | **C2, C3** | Electrolytic Capacitors | Radial Can | Radial | $10\ \mu\text{F}$ Electrolytic Capacitors (C3 bootstrap) | 2 |
 | **C5** | Ceramic Capacitor | Ceramic Disc | Radial | $100\text{ nF}$ (see schematic) | 1 |
 | **C6** | Ceramic Capacitor | Ceramic Disc | Radial | $1\text{ nF}$ (see schematic) | 1 |
-| **R4, R6** | Gate Damping Resistors | Metal Film Resistor | Axial | $22\ \Omega$, $0.25\text{ W}$, $1\%$ Tolerance | 2 |
-| **R3, R5** | Gate Pull-Down Resistors| Carbon Film Resistor | Axial | $10\text{ k}\Omega$, $0.25\text{ W}$ | 2 |
-| **R1** | Resistor | Metal Film Resistor | Axial | $1\text{ k}\Omega$, $0.25\text{ W}$ (see schematic) | 1 |
-| **R2** | Resistor | Metal Film Resistor | Axial | $330\ \Omega$, $0.25\text{ W}$ (see schematic) | 1 |
+| **R4, R6** | Gate Damping Resistors | Axial | Axial | $22\ \Omega$ (see schematic) | 2 |
+| **R3, R5** | Gate Pull-Down Resistors| Axial | Axial | $10\text{ k}\Omega$ (see schematic) | 2 |
+| **R1** | Resistor | Axial | Axial | $1\text{ k}\Omega$ (see schematic) | 1 |
+| **R2** | Resistor | Axial | Axial | $330\ \Omega$ (see schematic) | 1 |
 | **D1, D2** | Fast Switching Diodes | 1N4148 | DO-35 | $100\text{ V}$, $200\text{ mA}$, $t_{\text{rr}} \le 4\text{ ns}$ | 2 |
 | **J1 - J5**| Terminal Connectors | Screw Terminal | Through-Hole | 2-Pin / 3-Pin PCB Terminal Blocks | 5 |
 | **BMS** | Battery Protection Board | HW-391 2S 20A BMS | PCB Module | Overcharge: $8.4\text{ V}$, Cutoff: $6.0\text{ V}$ | 1 |

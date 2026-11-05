@@ -70,7 +70,7 @@ $$\Delta I_{\text{in}} = \frac{V_{\text{DC}}}{L \cdot f_{\text{sw}}} \cdot (2D -
 
 ### Key Engineering Insights
 
-1. **Zero Theoretical Ripple at $D = 0.5$:** At a 50% duty cycle, the rising slope of $i_{L1}$ perfectly cancels the falling slope of $i_{L2}$, driving net input ripple to zero ($\Delta I_{\text{in}} = 0$).
+1. **Zero Theoretical Ripple at $D = 0.5$:** At a 50% duty cycle, the rising slope of $i_{L1}$ cancels (ideal case) the falling slope of $i_{L2}$, driving net input ripple to zero ($\Delta I_{\text{in}} = 0$).
 2. **$\approx 66.7\%$ Ripple Reduction at Nominal Duty ($D \approx 0.60$):**
 
 $$\frac{\Delta I_{\text{in}}}{\Delta I_L} = \frac{2D - 1}{D} = \frac{2(0.591) - 1}{0.591} \approx 0.308$$

@@ -60,7 +60,7 @@ $$C_{\text{dc}} \frac{d V_{\text{DC}}}{d t} = I_{\text{boost,out}}(t) - I_{\text
 ```text
        ┌─────────────────────────────────────────┐
        │           Solar PV Generation           │
-       │          P_PV = 8,491 W (STC)           │
+       │               P_PV = 8,491 W            │
        └────────────────────┬────────────────────┘
                             │
                             ▼
