@@ -1,6 +1,6 @@
 # 🚗 EV Buck Charger: Power Stage, Hardware Prototyping & Closed-Loop CC/CV Control
 
-> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Step-Down Power Stage Sizing, Measured Parasitic Compensation, Discrete PI Current Control & Automated CC/CV State Logic

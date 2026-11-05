@@ -1,6 +1,6 @@
 # 🌐 Full System Integration & Multi-Converter Microgrid Control
 
-> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Closed-Loop Multi-Converter Microgrid, Energy Management Strategy (EMS), 600V DC-Link Voltage Anchoring & Telemetry Verification

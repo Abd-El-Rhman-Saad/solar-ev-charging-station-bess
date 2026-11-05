@@ -1,6 +1,6 @@
 # 🔋 Battery Energy Storage System (BESS) & Two-Quadrant Chopper
 
-> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Bidirectional Power Stage Topology, Discrete Bilinear Control, Hysteresis Modulation & Embedded Microcontroller Implementation
@@ -141,7 +141,7 @@ function [Gate_High, Gate_Low] = fcn(Vdc_meas, Ibatt_meas, Vdc_ref)
 % Cascaded PI Voltage Regulation + Hysteresis Current Controller
 % Topology: Bidirectional Two-Quadrant Chopper (BESS Interface)
 % Execution Sample Time: Ts = 50 microseconds
-% Subsystem Lead: Eng. Abd El-Rhman Muhammad Saad
+% Subsystem Lead: Abd El-Rhman Muhammad Saad
 % =========================================================================
 
 % PART 1: Persistent State Memory Registers

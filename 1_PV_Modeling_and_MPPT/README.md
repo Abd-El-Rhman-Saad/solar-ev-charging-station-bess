@@ -1,6 +1,6 @@
 # ☀️ PV System Modeling & Advanced MPPT Implementation
 
-> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng.Abd El-Rhman Muhammad Saad*  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Single-Diode Photovoltaic Modeling, Operational Perturb & Observe (P&O), Embedded C Firmware & Partial Shading Sweep
@@ -25,7 +25,7 @@ To establish full clarity regarding theoretical investigation versus physical ha
 | :--- | :--- | :--- |
 | **`pv_curves.slx`** | Simulation Model | Single-diode analytical model extracting non-linear I-V and P-V characteristic curves |
 | **`MPPT_PO1.slx`** | Primary Control | Dedicated Simulink model of the active Perturb & Observe (P&O) tracking loop |
-| **`mppt_po.c`** | Embedded Firmware | Fixed-point C implementation of P&O logic for microcontroller deployment |
+| **`mppt_po.c`** | Embedded Firmware | Floating-point ANSI C implementation of P&O logic for microcontroller deployment |
 | **`Incremental_conductance.slx`** | Simulation Benchmark | Comparative simulation assessing dI/dV + I/V = 0 tracking dynamics |
 | **`Central_Boost_MPPT_with_check.slx`** | Advanced Control | Global forced voltage sweep supervisory loop mitigating partial shading |
 
@@ -259,7 +259,7 @@ The supervisory controller executes a deterministic sequential sweep when a powe
 
 ### Global Peak Power Recovery Scope
 
-The dynamic scope below shows the power recovering to the $\approx 5\text{ kW}$ level after the supervisory sweep, where the system settles at a mean of $\approx 5.0\text{ kW}$ with a switching-ripple band of $\approx 4.8\text{--}5.2\text{ kW}$ (envelope peak $5,202\text{ W}$ at $V_{\text{pv}} = 247.1\text{ V}$ and $I_L = 20.59\text{ A}$):
+The dynamic scope below shows the power recovering to the $\approx 5\text{ kW}$ level after the supervisory sweep (mean operating point $\approx 5.09\text{ kW}$ at $V_{\text{pv}} = 247.1\text{ V}$ and $I_L = 20.59\text{ A}$; switching-ripple envelope peak $5,202\text{ W}$):
 
 <p align="center">
   <img src="images/global_mppt_power_recovery_300dpi.png" width="85%" alt="Global MPPT Forced Sweep Power Recovery Scope" />

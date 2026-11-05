@@ -1,6 +1,6 @@
 # 🛠️ Hardware Prototyping & PCB Design
 
-> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Eng. Abd El-Rhman Muhammad Saad*  
+> **Team Project:** Solar-Powered EV Charging Station with BESS (8-member team) — *documentation by Abd El-Rhman Muhammad Saad*  
 > **Academic Institution:** Faculty of Engineering, Alexandria University (Class of 2026)  
 > **Department:** Electrical Power and Machines Engineering  
 > **Core Focus:** Altium PCB Design, High-Power Layout Integrity, ATmega328P Timer 1 Firmware & Bench Instrumentation Testing
@@ -142,9 +142,7 @@ To achieve deterministic high-speed switching without software jitter, the **ATm
 
 ### Firmware Architecture & Implementation Context
 
-> **Firmware Versions Documented in this Repository:**
-> * **Closed-Loop PI Firmware (Thesis §6.2.5.2, Listing 6.3):** 32-bit fixed-point (`int32_t`, scaling $2^{17}$) PI regulator with Tustin-derived coefficients, executed inside the 10 kHz Timer 1 overflow ISR. The thesis attributes the closed-loop bench results (Fig. 6.31, Table 6.1) to this controller.
-> * **Telemetry Sketch (below):** A floating-point Arduino sketch of the current PI loop that prints `I_meas | Target | OCR1A` to the Serial Monitor — the same log format shown in the bench photo `serial_monitor.jpg`. Its loop rate (`delay(5)`, $\approx 200\text{ Hz}$) applies to this listing as written.
+> **Firmware:** The firmware sources are provided in [`/Firmware`](../Firmware/): the thesis listings (§6.1.5, §6.2.5) extracted verbatim, plus the Serial-telemetry sketch used for the bench logs. The control code was written primarily by teammate Mai Nagah Ali and debugged during bench verification. Thesis Listing 6.3 is the fixed-point PI current controller of the **buck** stage (10 kHz Fast PWM); the telemetry sketch below follows the 2Q chopper configuration (10 kHz Phase-Correct PWM, `TOP = 800`).
 
 ### Mathematical Timer Configuration
 

@@ -11,6 +11,10 @@
 > **Thesis Title:** *Integration of Photovoltaic Systems and Energy Storage for Electric Vehicle Charging Station*.  
 > **Academic Supervisor:** Prof. Dr. Ahmed Abbas El Serougi
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Abd_El--Rhman_Saad-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/Abd-El-Rhman-Saad)
+[![GitHub](https://img.shields.io/badge/GitHub-Abd--El--Rhman--Saad-181717?logo=github&logoColor=white)](https://github.com/Abd-El-Rhman-Saad)
+[![Email](https://img.shields.io/badge/Email-abdelrhmanmsaad22@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:abdelrhmanmsaad22@gmail.com)
+
 ---
 
 ## 🏛️ Master Architecture Overview
@@ -33,7 +37,7 @@ Grid-independent EV charging stations face the dual challenges of intermittent s
 | :--- | :---: | :---: | :--- |
 | **Common DC-Link Bus** | **$600.0\text{ V DC}$** | $12.0\text{ V} - 24.0\text{ V}$ | Regulated via BESS cascade control (settles firmly at $600.0\text{ V}$) |
 | **Solar PV Generation** | **$\approx 8.5\text{ kW}$** ($8,491\text{ W}$ Scope / $\approx 8.52\text{ kW}$ Thesis) | 12V / 10W Emulated Source | P&O MPPT tracking knee of P-V curve at $V_{mp} = 243.6\text{ V}$ |
-| **Interleaved Boost Stage** | Dual-Phase, $180^\circ$ Phase Shift | Dual $2.0\text{ mH}$ Power Chokes | $49.1\% / 50.9\%$ current sharing; cancels $20\text{ kHz}$ input current ripple |
+| **Interleaved Boost Stage** | Dual-Phase, $180^\circ$ Phase Shift | Dual $2.0\text{ mH}$ E-Core Power Chokes | $49.1\% / 50.9\%$ current sharing; cancels $20\text{ kHz}$ input current ripple |
 | **BESS Energy Buffer** | **$3.48\text{ kW}$** Deficit / $+4.50\text{ kW}$ Surplus | $7.4\text{ V}$ ($2.55\text{ Ah}$) 2S Li-ion | Synchronous bidirectional power flow (Buck charge / Boost discharge) |
 | **EV Charging Power** | **$50\text{ kW}$** Utility Sizing / **$4.07\text{ kW}$** Fast Track (Surplus) / **$12.0\text{ kW}$** Deficit ($3.48\text{ kW}$ BESS support) | $3.7\text{ V} / 0.74\text{ A}$ Prototype | Dual-loop automatic CC→CV transition |
 | **Transient Settling Time** | **$< 0.5\text{ s}$** | $< 0.4\text{ s}$ | Voltage overshoot bounded below $0.7\%$ ($\approx 0.63\%$, $603.8\text{ V}$ peak) |
@@ -192,14 +196,10 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
 
 **Abd El-Rhman Muhammad Saad — Hardware Design, Review & Bench Validation:**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Abd_El--Rhman_Saad-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/Abd-El-Rhman-Saad)
-[![GitHub](https://img.shields.io/badge/GitHub-Abd--El--Rhman--Saad-181717?logo=github&logoColor=white)](https://github.com/Abd-El-Rhman-Saad)
-[![Email](https://img.shields.io/badge/Email-abdelrhmanmsaad22@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:abdelrhmanmsaad22@gmail.com)
-
 | Board | Role |
 | :--- | :--- |
 | **Two-Quadrant Chopper** | Sole designer: schematic and PCB layout in Altium Designer; also assembled, soldered, and bench-tested the board. |
-| **Interleaved Boost Converter** | Reviewed the sub-team's design and corrected errors; after fabrication, reworked the printed board by hand (cut tracks and re-routed connections between the two copper layers) to resolve a layout error and tight component spacing that affected soldering. |
+| **Interleaved Boost Converter** | Reviewed the sub-team's design and corrected errors; after fabrication, reworked the printed board by hand to resolve a layout error and tight component spacing: tracks were cut and the connections were re-made with jumper wires and trimmed component leads, some on the same layer and some bridged between the two copper layers. |
 | **EV Buck Charger** | Reviewed the design and advised on it; assembled and soldered the board. |
 
 * **Firmware:** Debugged and reviewed the embedded control firmware (written primarily by teammate Mai Nagah Ali), identifying errors and applying fixes during bench verification.
@@ -212,10 +212,10 @@ Developed as a Senior B.Sc. Graduation Project by a dedicated team of electrical
    * *Implementation Fact:* The gate driver stage is inverted, so the control firmware computes the effective duty cycle as $D_{\text{effective}} = \frac{\text{TOP} - \text{OCR1A}}{\text{TOP}}$, with `OCR1A` constrained within `[50, TOP_PWM - 50]` to bound effective duty between $\approx 6\% \text{ and } 94\%$.
 2. **Ground Isolation & Sensor Noise Protection (Design Architecture):**
    * *Design Context:* Rapid $di/dt$ switching pulses from the IRFP260N MOSFETs can couple high-frequency switching transients into sensitive analog measurement lines.
-   * *Engineering Implementation:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor, paired with a 100-sample zero-offset auto-calibration routine at boot.
+   * *Engineering Implementation:* Architected a dedicated Star Grounding scheme segregating Power Ground (PGND) from Signal Ground (AGND) with a single-point connection at the bulk DC link capacitor.
 3. **Switching Frequency & Audible Whine:**
-   * *Observation:* An audible whine was observed from the 2.0 mH toroidal choke under the Arduino default PWM frequency ($\approx 490\text{ Hz}$).
-   * *Resolution:* The whine disappeared completely on the bench after configuring bare-metal Timer 1 registers for the $10.0\text{ kHz}$ design frequency.
+   * *Observation:* An audible whine was observed from the 2.0 mH E-core choke under the Arduino default PWM frequency ($\approx 490\text{ Hz}$).
+   * *Resolution:* The whine disappeared completely on the bench after the firmware was set to the $10.0\text{ kHz}$ design frequency.
 
 #### 📊 Practical Competency & Artifact Mapping:
 
