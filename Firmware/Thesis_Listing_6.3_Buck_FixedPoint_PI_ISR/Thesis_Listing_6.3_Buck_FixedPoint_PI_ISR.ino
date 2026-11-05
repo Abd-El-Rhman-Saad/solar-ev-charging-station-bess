@@ -1,7 +1,7 @@
 // =========================================================================
 // Thesis Listing 6.3: Advanced Fixed-Point PI Controller using Timer1 ISR
 // Reference: Graduation Project Thesis §6.2.5.2 (Listing 6.3)
-// Author: Mai Nagah Ali
+// Source: graduation project team firmware
 // Target: Buck Stage Current Regulation (BUCK_ICNTRL_PI, Io_ref = 0.3 A)
 // Notes: 32-bit fixed-point scaling (SC_B=17), executed inside Timer 1 OVF ISR (10 kHz Fast PWM, ICR1 = 1599)
 // =========================================================================

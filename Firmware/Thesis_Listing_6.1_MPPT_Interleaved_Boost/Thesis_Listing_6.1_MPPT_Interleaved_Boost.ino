@@ -1,8 +1,9 @@
 // =========================================================================
 // Thesis Listing 6.1: Embedded Arduino C++ Hybrid Global Sweep & P&O MPPT
 // Reference: Graduation Project Thesis §6.1.5 (Listing 6.1)
-// Author: Mai Nagah Ali
+// Source: graduation project team firmware
 // Notes: MATLAB-style '%' comments from thesis converted to '//' for compilation.
+// NOTE: Added Serial.print("(") to close the parenthesis printed by the original listing.
 // Registers: Mode 14 Fast PWM (ICR1 = 1600, 10 kHz).
 // =========================================================================
 

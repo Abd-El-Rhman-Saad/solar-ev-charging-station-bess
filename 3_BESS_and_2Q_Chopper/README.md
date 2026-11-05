@@ -311,7 +311,7 @@ Shows the rapid negative current step response, showing that the BESS immediatel
 | **Power Semiconductors** | High-Power IGBT / SiC Modules | **IRFP260N MOSFETs** | $200\text{ V}$, $50\text{ A}$, ultra-low $R_{\text{DS(on)}} = 0.04\ \Omega$ |
 | **Gate Driver & Isolation**| Isolated Optical Half-Bridge | **6N139 + IR2111** | $5000\text{ V}_{\text{RMS}}$ galvanic isolation + built-in dead-time |
 | **Switching Frequency** | $10\text{ kHz}$ | $10\text{ kHz}$ | Identical switching frequency for direct simulation-hardware fidelity |
-| **Interfacing Inductance** | $2.0\text{ mH}$ Power Inductor | $2.0\text{ mH}$ Toroidal Choke | Limits peak-to-peak inductor current ripple ($\Delta I_L$) |
+| **Interfacing Inductance** | $2.0\text{ mH}$ Power Inductor | $2.0\text{ mH}$ E-core ferrite Choke | Limits peak-to-peak inductor current ripple ($\Delta I_L$) |
 
 ---
 

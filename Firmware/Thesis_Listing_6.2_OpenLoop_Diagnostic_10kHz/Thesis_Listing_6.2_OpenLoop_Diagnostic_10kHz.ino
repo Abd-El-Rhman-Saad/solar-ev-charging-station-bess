@@ -1,8 +1,9 @@
 // =========================================================================
 // Thesis Listing 6.2: Open-Loop Diagnostic Firmware (10kHz Timer 1 PWM)
 // Reference: Graduation Project Thesis §6.2.5.1 (Listing 6.2)
-// Author: Mai Nagah Ali
+// Source: graduation project team firmware
 // Notes: Sets 50% duty cycle at 10 kHz on Timer 1 (Mode 10 Phase-Correct PWM, ICR1 = 800)
+// NOTE: The thesis comment describes this as 'Fast PWM', but the register setup (WGM13 + WGM11) operates in Mode 10 (Phase-Correct PWM, 10 kHz).
 // =========================================================================
 
 /**

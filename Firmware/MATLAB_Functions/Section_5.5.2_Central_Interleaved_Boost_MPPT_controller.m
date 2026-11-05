@@ -1,3 +1,6 @@
+% Source: graduation project team firmware
+% Reference: Graduation Project Thesis §5.5.2
+
 function [g1, g2] = mppt_controller_pwm(Vpv, Ipv, IL1)
 persistent V_target Pmax Vbest mode timer;
 persistent err_int_v err_int_i t;

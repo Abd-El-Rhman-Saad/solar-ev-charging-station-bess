@@ -1,7 +1,7 @@
 // =========================================================================
 // Bench Telemetry Sketch: Floating-Point Current PI Loop with Serial Logging
 // Source: Bench Testing Prototype for Two-Quadrant Chopper
-// Author: Teammate Mai Nagah Ali (debugged & tested by Abd El-Rhman Muhammad Saad)
+// Source: graduation project team firmware
 // Notes: Matches the Serial Monitor log format in 5_Hardware_and_PCB_Design/images/serial_monitor.jpg
 // Loop Rate: ~200 Hz (delay(5)); Timer 1 Phase-Correct PWM (10 kHz, TOP = 800)
 // =========================================================================

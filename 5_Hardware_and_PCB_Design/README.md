@@ -19,11 +19,11 @@ The hardware implementation bridges the gap between numerical simulation and pra
 
 ### Hardware Archive Packages
 
-| Archive Name | Target Topology | EDA Tool | Contents Included |
+| Archive Package | Target Topology | EDA Tool | Core Contents & Included Documents |
 | :--- | :--- | :--- | :--- |
-| **`Two_Quadrant_Chopper.zip`** | Bidirectional 2Q Chopper | Altium Designer | `.SchDoc`, `.PcbDoc`, Gerbers, NC Drill, Pick-and-Place |
-| **`Buck_Converter.zip`** | Synchronous Buck Power Stage | Altium Designer | Complete Schematic, Layout, BOM, Fabrication Outputs |
-| **`Interleaved_Thevenin.zip`** | 2-Phase Interleaved Boost | Altium Designer | Dual-phase layout, Inductor footprints, Gate routing |
+| [**`Two_Quadrant_Chopper.zip`**](Two_Quadrant_Chopper.zip) | Bidirectional 2Q Chopper | Altium Designer 24 | `.SchDoc`, `.PcbDoc`, `2Q_Final.OutJob`, CAM documents, component libraries, schematic PDF |
+| [**`Buck_Converter.zip`**](Buck_Converter.zip) | Synchronous Buck Power Stage | Altium Designer 24 | `.SchDoc`, `.PcbDoc`, CAM documents, component libraries |
+| [**`Interleaved_Thevenin.zip`**](Interleaved_Thevenin.zip) | 2-Phase Interleaved Boost | Altium Designer 24 | `.SchDoc`, `.PcbDoc` (pre-rework layout) |
 
 ---
 
@@ -33,7 +33,7 @@ The hardware design process follows standard industrial power electronics EDA st
 
 * **Schematic Capture (`.SchDoc`):** Hierarchical schematic structure isolating the high-voltage/high-current power stage from the sensitive low-voltage analog sensing and digital PWM control domains.
 * **PCB Layout Routing (`.PcbDoc`):** Double-sided FR-4 substrate ($1.6\text{ mm}$ thickness, $1\text{ oz}$ outer copper weight) optimized for minimum parasitic inductance and high thermal dissipation.
-* **Manufacturing & CAM (`CAMtastic`):** Standard RS-274X Gerber files, NC Drill files, and solder mask/paste layers ready for bare-board fabrication.
+* **Manufacturing & CAM (`CAMtastic`):** CAM documents and OutJob configurations ready for generating standard RS-274X Gerber and NC Drill fabrication outputs.
 
 ### Altium Schematic Architecture
 Detailed circuit design showing the gate-drive optocoupler isolation stage, bootstrap circuitry, half-bridge MOSFET leg, and analog sensing connections:
@@ -43,7 +43,7 @@ Detailed circuit design showing the gate-drive optocoupler isolation stage, boot
 </p>
 
 ### Altium 3D Isometric Board Layout
-3D CAD rendering of the fabricated two-quadrant board displaying component placement, toroidal inductors, radial electrolytic filter capacitors, and heatsink mounting:
+3D CAD rendering of the fabricated two-quadrant board displaying component placement, E-core ferrite inductors, radial electrolytic filter capacitors, and heatsink mounting:
 
 <p align="center">
   <img src="images/pcb_3d_isometric.png" width="90%" alt="Altium PCB 3D Isometric Board Layout" />
@@ -76,11 +76,10 @@ Designing PCBs for high-frequency switching converters ($10\text{ kHz}$ to $100\
    * A dedicated damping gate resistor ($22\ \Omega$) is placed immediately adjacent to the MOSFET gate pin to suppress ringing caused by gate capacitance ($C_{\text{iss}}$) and trace inductance.
 
 3. **Thermal Management & Low-ESR Polygon Pours:**
-   * High-current conduction paths feature broad polygon copper pours rather than narrow traces, drastically lowering Equivalent Series Resistance (ESR) and eliminating thermal hotspots.
-   * Heavy-duty TO-247 packages are heatsink-mounted to maintain thermal stability during sustained high-current testing.
+   * High-current conduction paths feature broad polygon copper pours rather than narrow traces, drastically lowering Equivalent Series Resistance (ESR) and reducing resistive heating.
 
 4. **Galvanic Isolation & Noise Decoupling:**
-   * High-speed optocouplers (**6N139**) provide up to $5000\text{ V}_{\text{RMS}}$ electrical isolation between the digital controller and high-voltage power semiconductor switches.
+   * High-speed optocouplers (**6N139**) provide galvanic isolation per datasheet between the digital controller and high-voltage power semiconductor switches.
    * Dedicated $100\text{ nF}$ ceramic decoupling capacitors are positioned directly adjacent to IC power supply pins to suppress high-frequency transient ripple.
 
 ---
@@ -94,14 +93,14 @@ To validate converter topologies under real operating dynamics, a dedicated hard
 | Equipment Description | Model / Tool Identifier | Operational Specifications | Role in Testbed |
 | :--- | :--- | :--- | :--- |
 | **Digital Storage Oscilloscope** | University Laboratory Oscilloscopes (Tektronix TBS1000 Series & Hantek DSO) | $100\text{ MHz} / 70\text{ MHz}$ Bandwidth | PWM gate waveform, switching transient & ripple capture |
-| **High-Precision Multimeter** | UNI-T UT89X / UT33D+ | True RMS, DC Current up to $20\text{ A}$ | Bench DC voltage and closed-loop current verification |
-| **Regulated DC Power Supply** | Long-Wei DC Bench Supply | $0 - 30\text{ V}$, $0 - 10\text{ A}$ Adjustable | Emulated DC bus and laboratory power source |
+| **Digital Multimeters** | UNI-T UT33D+ (one per team member); UNI-T UT89X (Abd El-Rhman's personal meter) | True RMS multimeters | Bench DC voltage and closed-loop current verification |
+| **Regulated DC Power Supply** | Long-Wei DC Bench Supply; TDK-Lambda GEN300-11 | Long-Wei: $0 - 30\text{ V}$ / $0 - 10\text{ A}$; GEN300-11: $0 - 300\text{ V}$ / $0 - 11\text{ A}$ ($3.3\text{ kW}$, per datasheet) | Laboratory DC sources for bench testing |
 | **Stationary Battery Pack** | 2S Li-ion (ICR18650 Pack) | $7.4\text{ V}$ Nominal, $2.55\text{ Ah}$ Capacity | Physical energy storage device under test |
 | **Battery Management System** | HW-391 2S 20A Li-ion BMS | Overcharge ($8.4\text{ V}$), Undercharge ($6.0\text{ V}$) | Cell protection against thermal and electrical runaway |
 | **Microcontroller Platform** | ATmega328P (Arduino Uno) | $16\text{ MHz}$ Crystal, 16-bit Timer 1 | Real-time discrete PI current controller execution |
 
 ### Assembled & Soldered 2Q Chopper PCB
-Physical fabricated hardware board showing soldered power semiconductors, toroidal choke, and terminal blocks:
+Physical fabricated hardware board showing soldered power semiconductors, E-core ferrite choke, and terminal blocks:
 
 <p align="center">
   <img src="images/pcb_actual_board.jpg" width="85%" alt="Assembled and Soldered 2Q Chopper PCB" />
@@ -121,16 +120,20 @@ Full hardware integration featuring DC power supplies, oscilloscope probing, mul
 | Component Tag | Component Description | Manufacturer Part | Package | Electrical Rating / Spec | Quantity |
 | :---: | :--- | :--- | :---: | :--- | :---: |
 | **Q1, Q2** | Power N-Channel MOSFET | IRFP260N | TO-247AC | $200\text{ V}$, $50\text{ A}$, $R_{\text{DS(on)}} = 0.04\ \Omega$ | 2 |
-| **U1** | High-Speed Optocoupler | 6N139 | DIP-8 | $5000\text{ V}_{\text{RMS}}$ Isolation, $100\text{ kBd}$ | 1 |
-| **U2** | Half-Bridge Gate Driver | IR2111 | DIP-8 | High/Low Driver with $650\text{ ns}$ Internal Dead-time | 1 |
-| **U3** | Linear Hall Current Sensor | ACS712ELCTR-05B-T | SOIC-8 | $\pm 5\text{ A}$ Range, $185\text{ mV/A}$ Sensitivity | 1 |
-| **L1** | Power Energy Storage Inductor | Toroidal Power Choke | Through-Hole | $2.0\text{ mH}$, $10\text{ A}_{\text{DC}}$ Saturation Current | 1 |
-| **C1, C4** | Film Decoupling Capacitor | Metallized Polyester | Radial | $220\text{ nF}$, $100\text{ V}$ Rating | 2 |
-| **C2** | Electrolytic Filter Capacitor | Low-ESR Radial | Radial | $200\ \mu\text{F}$, $50\text{ V}$ Working Voltage | 1 |
-| **C3** | Bootstrap Capacitor | Tantalum / Electrolytic | Radial | $10\ \mu\text{F}$, $25\text{ V}$ | 1 |
-| **D1, D2** | Ultrafast Switching Diode | 1N4148 | DO-35 | $100\text{ V}$, $200\text{ mA}$, $t_{\text{rr}} \le 4\text{ ns}$ | 2 |
-| **R4, R6** | Gate Damping Resistor | Metal Film Resistor | Axial | $22\ \Omega$, $0.25\text{ W}$, $1\%$ Tolerance | 2 |
-| **R3, R5** | Gate Pull-Down Resistor | Carbon Film Resistor | Axial | $10\text{ k}\Omega$, $0.25\text{ W}$ | 2 |
+| **U1** | High-Speed Optocoupler | 6N139 | DIP-8 | Galvanic isolation per datasheet | 1 |
+| **U2** | Half-Bridge Gate Driver | IR2111 | DIP-8 | High/Low Driver with internal dead-time | 1 |
+| **U3** | Linear Hall Current Sensor | ACS712-05B | SOIC-8 / Module | $\pm 5\text{ A}$ Range, $185\text{ mV/A}$ Sensitivity | 1 |
+| **L1** | Power Energy Storage Inductor | E-Core Power Choke | Through-Hole | $2.0\text{ mH}$ E-Core Ferrite Core Choke (`2mH E shape`) | 1 |
+| **C1, C4** | Decoupling Capacitors | Ceramic Disc | Radial | $220\text{ nF}$ Ceramic Capacitors | 2 |
+| **C2, C3** | Electrolytic Capacitors | Radial Can | Radial | $10\ \mu\text{F}$ Electrolytic Capacitors (C3 bootstrap) | 2 |
+| **C5** | Noise Filter Capacitor | Ceramic Disc | Radial | $100\text{ nF}$ Ceramic Capacitor | 1 |
+| **C6** | Sensor Filter Capacitor | Ceramic Disc | Radial | $1\text{ nF}$ Ceramic Capacitor | 1 |
+| **R4, R6** | Gate Damping Resistors | Metal Film Resistor | Axial | $22\ \Omega$, $0.25\text{ W}$, $1\%$ Tolerance | 2 |
+| **R3, R5** | Gate Pull-Down Resistors| Carbon Film Resistor | Axial | $10\text{ k}\Omega$, $0.25\text{ W}$ | 2 |
+| **R1** | Pull-Up Resistor | Metal Film Resistor | Axial | $1\text{ k}\Omega$, $0.25\text{ W}$ | 1 |
+| **R2** | Sensor Load Resistor | Metal Film Resistor | Axial | $330\ \Omega$, $0.25\text{ W}$ | 1 |
+| **D1, D2** | Fast Switching Diodes | 1N4148 | DO-35 | $100\text{ V}$, $200\text{ mA}$, $t_{\text{rr}} \le 4\text{ ns}$ | 2 |
+| **J1 - J5**| Terminal Connectors | Screw Terminal | Through-Hole | 2-Pin / 3-Pin PCB Terminal Blocks | 5 |
 | **BMS** | Battery Protection Board | HW-391 2S 20A BMS | PCB Module | Overcharge: $8.4\text{ V}$, Cutoff: $6.0\text{ V}$ | 1 |
 | **BATT** | 2S Li-ion Battery Pack | ICR18650 Cells | 2S1P Pack | $7.4\text{ V}$ Nominal, $2.55\text{ Ah}$ | 1 |
 
@@ -304,7 +307,7 @@ Bench current tracking combines graduation thesis Table 6.1 ($0.20\text{ A}$, $0
 ```text
 5_Hardware_and_PCB_Design/
 ├── README.md                                          # Master hardware & experimental report
-├── Two_Quadrant_Chopper.zip                           # Full Altium project (Schematic, PCB, Gerbers)
+├── Two_Quadrant_Chopper.zip                           # Full Altium project (Schematic, PCB, OutJob)
 ├── Buck_Converter.zip                                 # Full Altium project for synchronous buck stage
 ├── Interleaved_Thevenin.zip                           # Full Altium project for interleaved boost stage
 └── images/                                            # 300 DPI high-resolution experimental photographs
@@ -326,15 +329,13 @@ Bench current tracking combines graduation thesis Table 6.1 ($0.20\text{ A}$, $0
 
 1. **Bare Board Fabrication:**
    * Extract `Two_Quadrant_Chopper.zip`.
-   * Submit the generated Gerber files (`.GTL`, `.GBL`, `.GTO`, `.GBO`, `.GTS`, `.GBS`) and NC Drill file (`.TXT`) to any standard 2-layer PCB manufacturer (JLCPCB / PCBWay).
-   * Specify **$1.6\text{ mm}$ FR-4 thickness, $1\text{ oz}$ outer copper weight, HASL with lead finish**.
+   * Generate Gerber and drill files from `PCB1.PcbDoc` using `2Q_Final.OutJob` (or File > Fabrication Outputs in Altium Designer 24).
+   * Typical board specification (not verified from design files): $1.6\text{ mm}$ FR-4 thickness, $1\text{ oz}$ outer copper weight, HASL finish.
 2. **Component Assembly:**
    * Solder low-profile passive components first (resistors, diodes), followed by DIP IC sockets, terminal blocks, electrolytic capacitors, and TO-247 power MOSFETs.
    * Apply thermal interface grease and mount the TO-247 packages securely to aluminum heatsinks before electrical energization.
 3. **Firmware Upload:**
-   * Open `sketch_jun28a.ino` in the Arduino IDE.
-   * Select board: **Arduino Uno**; Programmer: **AVRISP mkII**.
-   * Compile and flash the firmware over USB.
+   * Open the target sketch from the [`Firmware/`](../Firmware/) directory in Arduino IDE 2.x (or implement the MATLAB Function using the Simulink Arduino support package) and upload it to the Arduino Uno.
 4. **Initial Power-Up Protocol:**
    * Connect an auxiliary $12.0\text{ V}$ isolated DC supply to terminal $J_1$ (Gate Driver VCC).
    * Verify gate pulses at pin 7 (HO) and pin 5 (LO) on an oscilloscope before connecting the high-voltage/battery bus.

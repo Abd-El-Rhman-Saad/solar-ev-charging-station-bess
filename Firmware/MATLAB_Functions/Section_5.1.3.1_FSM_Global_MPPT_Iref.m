@@ -1,3 +1,6 @@
+% Source: graduation project team firmware
+% Reference: Graduation Project Thesis §5.1.3.1
+
 function Iref = mppt(Vpv, Ipv)
 persistent V_target Pmax Vbest mode timer;
 

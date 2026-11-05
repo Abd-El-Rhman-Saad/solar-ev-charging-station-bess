@@ -108,6 +108,7 @@ The repository is structured into six modular engineering directories matching t
 | [**`4_EV_Buck_Charger`**](4_EV_Buck_Charger/) | Synchronous step-down buck charger, non-ideal parasitic compensation ($D_u \approx 39.75\%$), and automated CC-to-CV transition. | `Buck_Closed_Loop_CCCV_Charger.slx`<br>`Buck_Prototype_Current_Control.slx` | Non-ideal volt-second derivation<br>Dual-loop state machine |
 | [**`5_Hardware_and_PCB_Design`**](5_Hardware_and_PCB_Design/) | Complete Altium Designer projects, Star Grounding layout, ATmega328P Timer 1 C++ firmware, and bench multimeter testing. | `Two_Quadrant_Chopper.zip`<br>`Buck_Converter.zip` | 10 kHz Phase-Correct PWM code<br>12 bench verification photos |
 | [**`6_Full_System_Integration`**](6_Full_System_Integration/) | Master closed-loop microgrid coordination, EMS power balance verification, and full-system telemetry scopes. | `Solar_EV_BESS_Full_Sys.slx` | 28 level-1/2 schematics & scopes<br>Instantaneous power displays |
+| [**`Firmware`**](Firmware/) | Thesis firmware listings (§6.1.5, §6.2.5), MATLAB controller functions (§5.1.3.1, §5.5.2), and bench telemetry sketch. | `Thesis_Listing_6.1_MPPT_Interleaved_Boost.ino`<br>`Thesis_Listing_6.3_Buck_FixedPoint_PI_ISR.ino` | Verified C++ Arduino sketches<br>Embedded MATLAB Functions |
 
 ---
 
