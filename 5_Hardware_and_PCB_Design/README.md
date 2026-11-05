@@ -21,7 +21,7 @@ The hardware implementation bridges the gap between numerical simulation and pra
 
 | Archive Package | Target Topology | EDA Tool | Core Contents & Included Documents |
 | :--- | :--- | :--- | :--- |
-| [**`Two_Quadrant_Chopper.zip`**](Two_Quadrant_Chopper.zip) | Bidirectional 2Q Chopper | Altium Designer 24 | `.SchDoc`, `.PcbDoc`, `2Q_Final.OutJob`, CAM documents, component libraries, schematic PDF |
+| [**`Two_Quadrant_Chopper.zip`**](Two_Quadrant_Chopper.zip) | Bidirectional 2Q Chopper | Altium Designer 24 | `.SchDoc`, `.PcbDoc`, `2q.OutJob`, CAM documents, component libraries, schematic PDF |
 | [**`Buck_Converter.zip`**](Buck_Converter.zip) | Synchronous Buck Power Stage | Altium Designer 24 | `.SchDoc`, `.PcbDoc`, CAM documents, component libraries |
 | [**`Interleaved_Thevenin.zip`**](Interleaved_Thevenin.zip) | 2-Phase Interleaved Boost | Altium Designer 24 | `.SchDoc`, `.PcbDoc` (pre-rework layout) |
 
@@ -126,12 +126,12 @@ Full hardware integration featuring DC power supplies, oscilloscope probing, mul
 | **L1** | Power Energy Storage Inductor | E-Core Power Choke | Through-Hole | $2.0\text{ mH}$ E-Core Ferrite Core Choke (`2mH E shape`) | 1 |
 | **C1, C4** | Decoupling Capacitors | Ceramic Disc | Radial | $220\text{ nF}$ Ceramic Capacitors | 2 |
 | **C2, C3** | Electrolytic Capacitors | Radial Can | Radial | $10\ \mu\text{F}$ Electrolytic Capacitors (C3 bootstrap) | 2 |
-| **C5** | Noise Filter Capacitor | Ceramic Disc | Radial | $100\text{ nF}$ Ceramic Capacitor | 1 |
-| **C6** | Sensor Filter Capacitor | Ceramic Disc | Radial | $1\text{ nF}$ Ceramic Capacitor | 1 |
+| **C5** | Ceramic Capacitor | Ceramic Disc | Radial | $100\text{ nF}$ (see schematic) | 1 |
+| **C6** | Ceramic Capacitor | Ceramic Disc | Radial | $1\text{ nF}$ (see schematic) | 1 |
 | **R4, R6** | Gate Damping Resistors | Metal Film Resistor | Axial | $22\ \Omega$, $0.25\text{ W}$, $1\%$ Tolerance | 2 |
 | **R3, R5** | Gate Pull-Down Resistors| Carbon Film Resistor | Axial | $10\text{ k}\Omega$, $0.25\text{ W}$ | 2 |
-| **R1** | Pull-Up Resistor | Metal Film Resistor | Axial | $1\text{ k}\Omega$, $0.25\text{ W}$ | 1 |
-| **R2** | Sensor Load Resistor | Metal Film Resistor | Axial | $330\ \Omega$, $0.25\text{ W}$ | 1 |
+| **R1** | Resistor | Metal Film Resistor | Axial | $1\text{ k}\Omega$, $0.25\text{ W}$ (see schematic) | 1 |
+| **R2** | Resistor | Metal Film Resistor | Axial | $330\ \Omega$, $0.25\text{ W}$ (see schematic) | 1 |
 | **D1, D2** | Fast Switching Diodes | 1N4148 | DO-35 | $100\text{ V}$, $200\text{ mA}$, $t_{\text{rr}} \le 4\text{ ns}$ | 2 |
 | **J1 - J5**| Terminal Connectors | Screw Terminal | Through-Hole | 2-Pin / 3-Pin PCB Terminal Blocks | 5 |
 | **BMS** | Battery Protection Board | HW-391 2S 20A BMS | PCB Module | Overcharge: $8.4\text{ V}$, Cutoff: $6.0\text{ V}$ | 1 |
@@ -329,7 +329,7 @@ Bench current tracking combines graduation thesis Table 6.1 ($0.20\text{ A}$, $0
 
 1. **Bare Board Fabrication:**
    * Extract `Two_Quadrant_Chopper.zip`.
-   * Generate Gerber and drill files from `PCB1.PcbDoc` using `2Q_Final.OutJob` (or File > Fabrication Outputs in Altium Designer 24).
+   * Generate Gerber and drill files from `PCB1.PcbDoc` using `2q.OutJob` (or File > Fabrication Outputs in Altium Designer 24).
    * Typical board specification (not verified from design files): $1.6\text{ mm}$ FR-4 thickness, $1\text{ oz}$ outer copper weight, HASL finish.
 2. **Component Assembly:**
    * Solder low-profile passive components first (resistors, diodes), followed by DIP IC sockets, terminal blocks, electrolytic capacitors, and TO-247 power MOSFETs.
