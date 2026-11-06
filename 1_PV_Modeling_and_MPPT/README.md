@@ -301,4 +301,4 @@ The dynamic scope below shows the power recovering to the $\approx 5\text{ kW}$ 
 1. **Analytical Curves:** Open and run `pv_curves.slx` in MATLAB/Simulink R2022b or later to visualize non-linear P-V and I-V curves.
 2. **Primary P&O Tracking:** Open `MPPT_PO1.slx` to inspect the primary operational discrete P&O logic matching `mppt_po.c`.
 3. **Comparative Inc. Cond. Study:** Open `Incremental_conductance.slx` to evaluate simulation-based conductance tracking against P&O.
-4. **Partial Shading Global Sweep:** Execute `Central_Boost_MPPT_with_check.slx` to observe the four-state global voltage sweep recovering peak power ($5.2\text{ kW}$) under multi-peak conditions.
+4. **Partial Shading Global Sweep:** Execute `Central_Boost_MPPT_with_check.slx` to observe the four-state global voltage sweep, after which the PV power settles at a mean of $\approx 5.0\text{ kW}$ (switching ripple $\approx 4.8\text{--}5.2\text{ kW}$) under multi-peak conditions.
